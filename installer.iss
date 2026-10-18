@@ -35,11 +35,10 @@ WizardStyle=modern
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog commandline
 
-; 2. Αποτροπή DLL Crashes: Απενεργοποίηση Restart Manager του λειτουργικού
+; 2. Αποτροπή DLL Crashes: Απενεργοποίηση αυτόματης επανεκκίνησης του λειτουργικού
 ; Αποτρέπει την αναπαραγωγή «μολυσμένου» περιβάλλοντος διεργασίας
 CloseApplications=yes
 RestartApplications=no
-RestartManagerSupport=no
 
 [Languages]
 Name: "greek"; MessagesFile: "compiler:Languages\Greek.isl"
@@ -53,9 +52,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "dist\Protokollo\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppLauncher}"; IconFilename: "{app}\assets\app_icon.ico"; WorkingDir: "{app}"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\assets\app_icon.ico"
 Name: "{group}\Απεγκατάσταση"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppLauncher}"; IconFilename: "{app}\assets\app_icon.ico"; Tasks: desktopicon; WorkingDir: "{app}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\assets\app_icon.ico"; Tasks: desktopicon
 
 [Run]
 ; 3. Εκκίνηση μέσω του ενδιάμεσου σεναρίου εκκαθάρισης launcher.bat (αόρατα στο παρασκήνιο)
