@@ -16,7 +16,7 @@ import csv
 from datetime import datetime
 
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QMessageBox, QFileDialog, QInputDialog
+    QApplication, QMainWindow, QWidget, QMessageBox, QFileDialog, QInputDialog, QLabel
 )
 from PyQt6.QtCore import QTimer, QDate, Qt
 from PyQt6.QtGui import QKeySequence, QShortcut, QAction, QIcon
@@ -38,7 +38,7 @@ def get_app_icon_path():
 from ui_protocol_form import Ui_MainWindow
 from search_dialog import SearchDialog
 import database
-from version import __version__, __app_name__
+from version import __version__, __app_name__, GITHUB_REPO
 from updater import AutoUpdater
 
 GREEK_WEEKDAYS = [
@@ -64,10 +64,18 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             wf.setBold(True)
             w.setFont(wf)
 
+        # Set Window Title with Version
+        self.setWindowTitle(f"{__app_name__} v{__version__}")
+
         # Set Window Icon
         icon_path = get_app_icon_path()
         if icon_path:
             self.setWindowIcon(QIcon(icon_path))
+
+        # Permanent Version Indicator in Status Bar
+        self.lbl_version_status = QLabel(f" Έκδοση: v{__version__} ", self)
+        self.lbl_version_status.setStyleSheet("color: #1e395b; font-weight: bold; padding: 2px 8px;")
+        self.statusbar.addPermanentWidget(self.lbl_version_status)
 
         # Ensure database is initialized
         database.init_db()
@@ -164,6 +172,10 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
         # Μενού: Έλεγχος Ενημερώσεων (δυναμική προσθήκη)
         menu_help = self.actionAbout.parent()
         if menu_help is not None:
+            self.actionAppVersion = QAction(f"ℹ️ Έκδοση: v{__version__}", self)
+            self.actionAppVersion.setEnabled(False)
+            menu_help.addAction(self.actionAppVersion)
+
             self.actionCheckUpdates = QAction("🔄 Έλεγχος Ενημερώσεων...", self)
             menu_help.addAction(self.actionCheckUpdates)
             self.actionCheckUpdates.triggered.connect(self.action_check_updates)
@@ -1104,11 +1116,14 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
 
     def action_about(self):
         QMessageBox.about(
-            self, "Σχετικά με το Πρωτόκολλο",
+            self, f"Σχετικά με το {__app_name__}",
             f"<h3>{__app_name__}</h3>"
-            f"<p>Έκδοση {__version__} (PyQt6 &amp; Qt Designer)</p>"
+            f"<p><b>Έκδοση:</b> v{__version__}</p>"
+            f"<p><b>Αποθετήριο GitHub:</b> {GITHUB_REPO}</p>"
+            f"<p><b>Τεχνολογία:</b> Python / PyQt6 / SQLite</p>"
             "<p>Πλήρης σχεδιασμός φόρμας ακριβώς σύμφωνα με το πρότυπο.</p>"
-            "<p>🔄 Αυτόματος έλεγχος ενημερώσεων μέσω GitHub.</p>"
+            "<hr>"
+            "<p>🔄 <i>Υποστηρίζει αυτόματες ενημερώσεις μέσω GitHub.</i></p>"
         )
 
 
