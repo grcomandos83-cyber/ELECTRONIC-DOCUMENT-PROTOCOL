@@ -41,7 +41,7 @@ CloseApplications=yes
 RestartApplications=no
 
 [Languages]
-Name: "greek"; MessagesFile: "compiler:Languages\Greek.isl"
+Name: "greek"; MessagesFile: "languages\Greek.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
