@@ -1,5 +1,6 @@
 ; ─────────────────────────────────────────────────────────────
 ;  Inno Setup Script — Ηλεκτρονικό Πρωτόκολλο Εγγράφων
+;  Οδηγία Ασφαλούς Υλοποίησης (Safe Upgrade & DLL Protection)
 ; ─────────────────────────────────────────────────────────────
 
 #ifndef MyAppVersion
@@ -10,6 +11,7 @@
 #define MyAppNameEn "Protokollo"
 #define MyAppPublisher "Gregory"
 #define MyAppExeName "Protokollo.exe"
+#define MyAppLauncher "launcher.bat"
 
 [Setup]
 ; Unique GUID for this application
@@ -27,10 +29,17 @@ UninstallDisplayIcon={app}\assets\app_icon.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
+
+; 1. Δικαιώματα χρήστη: Επίπεδο τρέχοντος χρήστη (Χωρίς απαίτηση UAC)
+; Επιτρέπει την απρόσκοπτη εγγραφή τοπικών αρχείων και βάσης δεδομένων
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog commandline
+
+; 2. Αποτροπή DLL Crashes: Απενεργοποίηση Restart Manager του λειτουργικού
+; Αποτρέπει την αναπαραγωγή «μολυσμένου» περιβάλλοντος διεργασίας
 CloseApplications=yes
-RestartApplications=yes
+RestartApplications=no
+RestartManagerSupport=no
 
 [Languages]
 Name: "greek"; MessagesFile: "compiler:Languages\Greek.isl"
@@ -40,12 +49,15 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
+; Ενημερώνει αποκλειστικά binaries και assets. Η βάση δεδομένων και τα δεδομένα χρήστη μένουν ανέπαφα.
 Source: "dist\Protokollo\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\assets\app_icon.ico"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppLauncher}"; IconFilename: "{app}\assets\app_icon.ico"; WorkingDir: "{app}"
 Name: "{group}\Απεγκατάσταση"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\assets\app_icon.ico"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppLauncher}"; IconFilename: "{app}\assets\app_icon.ico"; Tasks: desktopicon; WorkingDir: "{app}"
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+; 3. Εκκίνηση μέσω του ενδιάμεσου σεναρίου εκκαθάρισης launcher.bat (αόρατα στο παρασκήνιο)
+; Εκκινεί το νέο εκτελέσιμο σε παρθένο περιβάλλον χωρίς κατάλοιπα του PyInstaller bootloader
+Filename: "{app}\{#MyAppLauncher}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runhidden

@@ -1,11 +1,11 @@
 # ─────────────────────────────────────────────────────────────
-#  Ηλεκτρονικό Πρωτόκολλο Εγγράφων — Auto-Updater
-#  Ελέγχει το GitHub Releases API για νέες εκδόσεις
-#  και ειδοποιεί τον χρήστη αθόρυβα.
+#  Ηλεκτρονικό Πρωτόκολλο Εγγράφων — Auto-Updater Core
+#  Οδηγία Ασφαλούς Υλοποίησης (Throttling, Cancellation & DLL Protection)
 # ─────────────────────────────────────────────────────────────
 
 import os
 import sys
+import time
 import json
 import tempfile
 import subprocess
@@ -23,7 +23,10 @@ from version import __version__, GITHUB_REPO
 
 
 class UpdateCheckThread(QThread):
-    """Background thread: ελέγχει GitHub Releases API για νέα έκδοση."""
+    """
+    Background worker thread: ελέγχει GitHub Releases API για νέα έκδοση.
+    Δίνει προτεραιότητα στη λήψη του πλήρους εγκαταστάτη (Inno Setup Installer).
+    """
     update_available = pyqtSignal(str, str, str)  # version, download_url, release_notes
     no_update = pyqtSignal()
     check_failed = pyqtSignal(str)
@@ -33,27 +36,38 @@ class UpdateCheckThread(QThread):
             api_url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
             req = urllib.request.Request(
                 api_url,
-                headers={"Accept": "application/vnd.github.v3+json", "User-Agent": "ProtocolApp"}
+                headers={"Accept": "application/vnd.github.v3+json", "User-Agent": "ProtocolApp-Updater"}
             )
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=12) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
 
-            latest_tag = data.get("tag_name", "").lstrip("v")
+            latest_tag = data.get("tag_name", "").lstrip("v").strip()
             release_notes = data.get("body", "") or ""
 
-            # Βρες το installer asset (.exe)
+            # Διάθεση Διπλού Πακέτου: Προτεραιότητα πάντοτε στο πρόγραμμα εγκατάστασης (Setup .exe)
             download_url = ""
-            for asset in data.get("assets", []):
+            assets = data.get("assets", [])
+
+            # 1η προτεραιότητα: αρχείο setup .exe
+            for asset in assets:
                 name = asset.get("name", "").lower()
                 if name.endswith(".exe") and "setup" in name:
                     download_url = asset["browser_download_url"]
                     break
 
+            # 2η προτεραιότητα: οποιοδήποτε άλλο .exe
+            if not download_url:
+                for asset in assets:
+                    name = asset.get("name", "").lower()
+                    if name.endswith(".exe"):
+                        download_url = asset["browser_download_url"]
+                        break
+
             if not latest_tag or not download_url:
                 self.no_update.emit()
                 return
 
-            # Σύγκριση εκδόσεων
+            # Συγχρονισμός Εκδόσεων: Σημασιολογική σύγκριση για αποτροπή ατέρμονου βρόχου (infinite update loop)
             if Version(latest_tag) > Version(__version__):
                 self.update_available.emit(latest_tag, download_url, release_notes)
             else:
@@ -63,157 +77,292 @@ class UpdateCheckThread(QThread):
             self.check_failed.emit(str(e))
 
 
-class DownloadThread(QThread):
-    """Κατεβάζει το νέο installer με progress reporting."""
-    progress = pyqtSignal(int)          # ποσοστό (0-100)
-    download_finished = pyqtSignal(str)  # filepath
-    download_failed = pyqtSignal(str)    # error message
+class DownloadWorkerThread(QThread):
+    """
+    Background worker thread λήψης αρχείου:
+    - Υπολογισμός ποσοστού (%), MB ληφθέντων/συνολικών και στιγμιαίας ταχύτητας
+    - Throttling εκπομπής σημάτων στα ~40ms (25fps) για αποτροπή UI freezes
+    - Ασφαλής ακύρωση με άμεση διαγραφή ημιτελών προσωρινών αρχείων
+    """
+    # progress_updated: percentage (int), downloaded_bytes, total_bytes, speed_bytes_per_sec
+    progress_updated = pyqtSignal(int, int, int, float)
+    download_finished = pyqtSignal(str)   # filepath
+    download_cancelled = pyqtSignal()
+    download_failed = pyqtSignal(str)     # error message
 
     def __init__(self, url, parent=None):
         super().__init__(parent)
         self.url = url
+        self.is_cancelled = False
+        self.temp_filepath = None
+
+    def cancel(self):
+        """Σηματοδοτεί ασφαλή ακύρωση της λήψης."""
+        self.is_cancelled = True
 
     def run(self):
+        self.temp_filepath = None
         try:
             req = urllib.request.Request(
                 self.url,
-                headers={"User-Agent": "ProtocolApp"}
+                headers={"User-Agent": "ProtocolApp-Updater"}
             )
             with urllib.request.urlopen(req, timeout=120) as resp:
-                total = int(resp.headers.get("Content-Length", 0))
+                total_bytes = int(resp.headers.get("Content-Length", 0))
                 temp_dir = tempfile.mkdtemp(prefix="protocol_update_")
-                filename = os.path.basename(self.url)
-                filepath = os.path.join(temp_dir, filename)
+                filename = os.path.basename(self.url) or "Protocol_Setup.exe"
+                self.temp_filepath = os.path.join(temp_dir, filename)
 
-                downloaded = 0
-                chunk_size = 65536  # 64 KB
-                with open(filepath, "wb") as f:
+                downloaded_bytes = 0
+                chunk_size = 65536  # 64 KB chunks
+
+                start_time = time.time()
+                last_emit_time = 0.0
+                speed_window_start = start_time
+                speed_window_bytes = 0
+                current_speed = 0.0
+
+                with open(self.temp_filepath, "wb") as f:
                     while True:
+                        if self.is_cancelled:
+                            break
+
                         chunk = resp.read(chunk_size)
                         if not chunk:
                             break
-                        f.write(chunk)
-                        downloaded += len(chunk)
-                        if total > 0:
-                            self.progress.emit(int(downloaded * 100 / total))
 
-            self.download_finished.emit(filepath)
+                        f.write(chunk)
+                        downloaded_bytes += len(chunk)
+                        speed_window_bytes += len(chunk)
+
+                        now = time.time()
+                        # Υπολογισμός στιγμιαίας ταχύτητας κάθε 0.5 sec
+                        window_duration = now - speed_window_start
+                        if window_duration >= 0.5:
+                            current_speed = speed_window_bytes / window_duration
+                            speed_window_bytes = 0
+                            speed_window_start = now
+
+                        # Throttling προόδου στα ~40ms (25fps) για ομαλό UI
+                        if (now - last_emit_time) >= 0.04 or downloaded_bytes == total_bytes:
+                            percent = int(downloaded_bytes * 100 / total_bytes) if total_bytes > 0 else 0
+                            self.progress_updated.emit(percent, downloaded_bytes, total_bytes, current_speed)
+                            last_emit_time = now
+
+            # Έλεγχος αν ακυρώθηκε
+            if self.is_cancelled:
+                self._cleanup_temp_file()
+                self.download_cancelled.emit()
+            else:
+                self.download_finished.emit(self.temp_filepath)
 
         except Exception as e:
-            self.download_failed.emit(str(e))
+            self._cleanup_temp_file()
+            if self.is_cancelled:
+                self.download_cancelled.emit()
+            else:
+                self.download_failed.emit(str(e))
+
+    def _cleanup_temp_file(self):
+        """Διαγράφει πλήρως τυχόν ημιτελή αρχεία από τον δίσκο."""
+        if self.temp_filepath and os.path.exists(self.temp_filepath):
+            try:
+                os.remove(self.temp_filepath)
+                parent_dir = os.path.dirname(self.temp_filepath)
+                if os.path.exists(parent_dir):
+                    os.rmdir(parent_dir)
+            except Exception:
+                pass
 
 
 class UpdateDialog(QDialog):
-    """Παράθυρο ειδοποίησης νέας έκδοσης."""
+    """Παράθυρο ειδοποίησης και ασύγχρονης λήψης νέας έκδοσης."""
 
     def __init__(self, new_version, download_url, release_notes="", parent=None):
         super().__init__(parent)
         self.new_version = new_version
         self.download_url = download_url
-        self.download_thread = None
-        self.setWindowTitle("🔄 Διαθέσιμη Ενημέρωση")
-        self.setFixedWidth(480)
+        self.worker = None
+
+        self.setWindowTitle("🔄 Διαθέσιμη Ενημέρωση Εφαρμογής")
+        self.setFixedWidth(520)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint)
 
         layout = QVBoxLayout(self)
-        layout.setSpacing(12)
+        layout.setSpacing(14)
 
-        # Τίτλος
+        # Τίτλος & Έκδοση
         title = QLabel(f"<h3>🆕 Νέα Έκδοση {new_version} Διαθέσιμη!</h3>")
         title.setWordWrap(True)
         layout.addWidget(title)
 
-        # Τρέχουσα & Νέα
         info = QLabel(
-            f"<p><b>Τρέχουσα έκδοση:</b> {__version__}<br/>"
-            f"<b>Νέα έκδοση:</b> {new_version}</p>"
+            f"<p><b>Τρέχουσα έκδοση:</b> v{__version__} &nbsp; ➔ &nbsp; "
+            f"<b>Νέα έκδοση:</b> <span style='color: #28a745;'>v{new_version}</span></p>"
         )
         layout.addWidget(info)
 
-        # Release Notes (αν υπάρχουν)
+        # Release Notes
         if release_notes:
-            notes_text = release_notes[:500]  # Κόβουμε αν είναι πολύ μεγάλο
-            notes = QLabel(f"<p><b>Τι νέο φέρνει:</b></p><p>{notes_text}</p>")
-            notes.setWordWrap(True)
-            layout.addWidget(notes)
+            notes_clean = release_notes.strip()
+            if len(notes_clean) > 500:
+                notes_clean = notes_clean[:500] + "..."
+            notes_box = QLabel(
+                f"<div style='background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 10px;'>"
+                f"<b>Τι νέο περιλαμβάνει:</b><br/>{notes_clean}</div>"
+            )
+            notes_box.setWordWrap(True)
+            layout.addWidget(notes_box)
 
-        # Progress bar (κρυμμένο αρχικά)
+        # Progress Bar & Λεπτομέρειες (κρυμμένα αρχικά)
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
+        self.progress_bar.setTextVisible(True)
         self.progress_bar.setVisible(False)
         layout.addWidget(self.progress_bar)
 
-        self.lbl_status = QLabel("")
-        self.lbl_status.setVisible(False)
-        layout.addWidget(self.lbl_status)
+        self.lbl_details = QLabel("")
+        self.lbl_details.setStyleSheet("color: #495057; font-size: 11px;")
+        self.lbl_details.setVisible(False)
+        layout.addWidget(self.lbl_details)
 
-        # Κουμπιά
+        # Κουμπιά ενεργειών
         btn_layout = QHBoxLayout()
-        self.btn_update = QPushButton("⬇️ Ενημέρωση Τώρα")
-        self.btn_update.setStyleSheet(
+        self.btn_action = QPushButton("⬇️ Ενημέρωση Τώρα")
+        self.btn_action.setStyleSheet(
             "QPushButton { background: #28a745; color: white; font-weight: bold; "
-            "padding: 8px 20px; border-radius: 4px; }"
+            "padding: 8px 22px; border-radius: 4px; }"
             "QPushButton:hover { background: #218838; }"
         )
-        self.btn_update.clicked.connect(self.start_download)
+        self.btn_action.clicked.connect(self.start_download)
 
-        self.btn_later = QPushButton("Αργότερα")
-        self.btn_later.setStyleSheet("QPushButton { padding: 8px 20px; }")
-        self.btn_later.clicked.connect(self.reject)
+        self.btn_cancel = QPushButton("Αργότερα")
+        self.btn_cancel.setStyleSheet("QPushButton { padding: 8px 20px; }")
+        self.btn_cancel.clicked.connect(self.on_cancel_or_close)
 
         btn_layout.addStretch()
-        btn_layout.addWidget(self.btn_later)
-        btn_layout.addWidget(self.btn_update)
+        btn_layout.addWidget(self.btn_cancel)
+        btn_layout.addWidget(self.btn_action)
         layout.addLayout(btn_layout)
 
     def start_download(self):
-        self.btn_update.setEnabled(False)
-        self.btn_later.setEnabled(False)
-        self.progress_bar.setVisible(True)
-        self.lbl_status.setVisible(True)
-        self.lbl_status.setText("⏳ Λήψη ενημέρωσης...")
+        """Εκκινεί τη λήψη στο background worker thread."""
+        self.btn_action.setEnabled(False)
+        self.btn_action.setText("⏳ Λήψη σε εξέλιξη...")
+        self.btn_cancel.setText("❌ Ακύρωση Λήψης")
 
-        self.download_thread = DownloadThread(self.download_url)
-        self.download_thread.progress.connect(self.progress_bar.setValue)
-        self.download_thread.download_finished.connect(self.on_download_finished)
-        self.download_thread.download_failed.connect(self.on_download_failed)
-        self.download_thread.start()
+        self.progress_bar.setVisible(True)
+        self.progress_bar.setValue(0)
+        self.lbl_details.setVisible(True)
+        self.lbl_details.setText("Σύνδεση με τον διακομιστή...")
+
+        self.worker = DownloadWorkerThread(self.download_url, parent=self)
+        self.worker.progress_updated.connect(self.on_progress_updated)
+        self.worker.download_finished.connect(self.on_download_finished)
+        self.worker.download_cancelled.connect(self.on_download_cancelled)
+        self.worker.download_failed.connect(self.on_download_failed)
+        self.worker.start()
+
+    def on_progress_updated(self, percent, downloaded, total, speed):
+        """Hook προόδου με throttling: υπολογισμός MB και στιγμιαίας ταχύτητας."""
+        self.progress_bar.setValue(percent)
+
+        downloaded_mb = downloaded / (1024 * 1024)
+        total_mb = total / (1024 * 1024) if total > 0 else 0
+
+        if speed >= 1024 * 1024:
+            speed_str = f"{speed / (1024 * 1024):.1f} MB/s"
+        else:
+            speed_str = f"{speed / 1024:.0f} KB/s"
+
+        if total_mb > 0:
+            self.lbl_details.setText(
+                f"Λήφθηκαν: {downloaded_mb:.1f} MB από {total_mb:.1f} MB ({percent}%) — Ταχύτητα: {speed_str}"
+            )
+        else:
+            self.lbl_details.setText(f"Λήφθηκαν: {downloaded_mb:.1f} MB — Ταχύτητα: {speed_str}")
 
     def on_download_finished(self, filepath):
-        self.lbl_status.setText("✅ Η λήψη ολοκληρώθηκε! Εκκίνηση εγκατάστασης...")
+        """
+        Εκτέλεση Αναβάθμισης & Αποτροπή DLL Crashes:
+        1. Καθαρίζει ρητά τις μεταβλητές περιβάλλοντος του PyInstaller bootloader.
+        2. Καλεί τον Inno Setup installer (/SILENT).
+        3. Το installer.iss έχει RestartManagerSupport=no και εκτελεί το launcher.bat.
+        """
+        self.lbl_details.setText("✅ Η λήψη ολοκληρώθηκε! Εκκίνηση ασφαλούς αναβάθμισης...")
+
         try:
-            # Εκτέλεση του installer σε σιωπηλή λειτουργία
-            subprocess.Popen([filepath, "/SILENT", "/RESTARTAPPLICATIONS"], shell=False)
-            # Κλείσιμο τρέχουσας εφαρμογής
+            # ΚΑΘΑΡΙΣΜΟΣ ΜΕΤΑΒΛΗΤΩΝ ΠΕΡΙΒΑΛΛΟΝΤΟΣ PYINSTALLER
+            # Αποτρέπει το κλασικό σφάλμα 'Failed to load Python DLL'
+            clean_env = os.environ.copy()
+            for pyinstaller_var in (
+                "_MEIPASS2",
+                "_MEIPASS",
+                "PYTHONPATH",
+                "PYTHONHOME",
+                "PYINSTALLER_STRICT_UNPACK_PROCESS"
+            ):
+                clean_env.pop(pyinstaller_var, None)
+
+            # Εκτέλεση Inno Setup installer σε σιωπηλή λειτουργία
+            subprocess.Popen(
+                [filepath, "/SILENT"],
+                env=clean_env,
+                cwd=tempfile.gettempdir(),
+                shell=False
+            )
+
             QMessageBox.information(
                 self,
-                "Ενημέρωση",
-                "Η ενημέρωση θα εγκατασταθεί τώρα.\n"
-                "Η εφαρμογή θα κλείσει και θα επανεκκινήσει αυτόματα."
+                "Αναβάθμιση σε εξέλιξη",
+                "Η εφαρμογή θα κλείσει τώρα για να ολοκληρωθεί η εγκατάσταση της νέας έκδοσης.\n\n"
+                "Όλα τα δεδομένα και οι εγγραφές σας παραμένουν απολύτως ασφαλή."
             )
             sys.exit(0)
+
         except Exception as e:
-            QMessageBox.warning(
-                self, "Σφάλμα",
-                f"Δεν ήταν δυνατή η εκκίνηση του installer:\n{e}\n\n"
-                f"Μπορείτε να τον εκτελέσετε χειροκίνητα:\n{filepath}"
+            QMessageBox.critical(
+                self, "Σφάλμα Εκκίνησης Εγκαταστάτη",
+                f"Δεν ήταν δυνατή η εκκίνηση του πακέτου αναβάθμισης:\n{e}\n\n"
+                f"Μπορείτε να το εκτελέσετε χειροκίνητα από:\n{filepath}"
             )
             self.accept()
 
+    def on_download_cancelled(self):
+        """Ασφαλής ακύρωση: επαναφορά κατάστασης διαλόγου."""
+        self.lbl_details.setText("⚠️ Η λήψη ακυρώθηκε. Τα προσωρινά αρχεία διαγράφηκαν.")
+        self.progress_bar.setVisible(False)
+        self.btn_action.setEnabled(True)
+        self.btn_action.setText("⬇️ Ενημέρωση Τώρα")
+        self.btn_cancel.setText("Κλείσιμο")
+
     def on_download_failed(self, error):
-        self.lbl_status.setText(f"❌ Σφάλμα λήψης: {error}")
-        self.btn_update.setEnabled(True)
-        self.btn_later.setEnabled(True)
+        """Αποτυχία λήψης."""
+        self.lbl_details.setText(f"❌ Σφάλμα λήψης: {error}")
+        self.btn_action.setEnabled(True)
+        self.btn_action.setText("Δοκιμάστε Ξανά")
+        self.btn_cancel.setText("Κλείσιμο")
+
+    def on_cancel_or_close(self):
+        """Χειρισμός ακύρωσης / κλεισίματος."""
+        if self.worker and self.worker.isRunning():
+            self.lbl_details.setText("⏳ Ακύρωση σύνδεσης και καθαρισμός αρχείων...")
+            self.worker.cancel()
+            self.worker.wait(2000)
+        self.reject()
+
+    def closeEvent(self, event):
+        """Αποτροπή ορφανών threads κατά το κλείσιμο του παραθύρου."""
+        if self.worker and self.worker.isRunning():
+            self.worker.cancel()
+            self.worker.wait(2000)
+        event.accept()
 
 
 class AutoUpdater:
     """
-    Κεντρική κλάση auto-updater.
-    Χρήση:
-        updater = AutoUpdater(parent_window)
-        updater.check_for_updates()           # αθόρυβα στο παρασκήνιο
-        updater.check_for_updates(silent=False) # χειροκίνητα (εμφανίζει μήνυμα αν δεν υπάρχει ενημέρωση)
+    Κεντρική κλάση διαχείρισης αυτόματων ενημερώσεων.
     """
 
     def __init__(self, parent=None):
@@ -222,7 +371,7 @@ class AutoUpdater:
         self.silent = True
 
     def check_for_updates(self, silent=True):
-        """Εκκινεί background έλεγχο ενημερώσεων."""
+        """Εκκινεί background έλεγχο στο GitHub Releases API."""
         self.silent = silent
         self.check_thread = UpdateCheckThread()
         self.check_thread.update_available.connect(self._on_update_available)
@@ -239,8 +388,8 @@ class AutoUpdater:
             QMessageBox.information(
                 self.parent,
                 "Έλεγχος Ενημερώσεων",
-                f"Χρησιμοποιείτε την τελευταία έκδοση ({__version__}).\n"
-                "Δεν υπάρχει διαθέσιμη ενημέρωση."
+                f"Χρησιμοποιείτε την τελευταία έκδοση (v{__version__}).\n"
+                "Δεν υπάρχει διαθέσιμη νέα ενημέρωση."
             )
 
     def _on_check_failed(self, error):

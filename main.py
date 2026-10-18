@@ -1,5 +1,16 @@
 import os
 import sys
+
+# ─────────────────────────────────────────────────────────────
+# Κλείδωμα Τρέχοντος Καταλόγου Εργασίας (Working Directory Lock)
+# Αποτρέπει σφάλματα διαδρομών όταν η εφαρμογή καλείται από
+# εξωτερικές συντομεύσεις ή διεργασίες συστήματος.
+# ─────────────────────────────────────────────────────────────
+if getattr(sys, 'frozen', False):
+    os.chdir(os.path.dirname(sys.executable))
+else:
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 import shutil
 import csv
 from datetime import datetime

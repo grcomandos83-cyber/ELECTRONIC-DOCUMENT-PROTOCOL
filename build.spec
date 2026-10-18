@@ -19,6 +19,7 @@ a = Analysis(
         ('protocol_form.ui', '.'),
         ('search_dialog.ui', '.'),
         ('assets/app_icon.ico', 'assets'),
+        ('launcher.bat', '.'),
     ],
     hiddenimports=[
         'PyQt6',
