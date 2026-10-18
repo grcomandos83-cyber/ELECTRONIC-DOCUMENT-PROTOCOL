@@ -19,7 +19,21 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QMessageBox, QFileDialog, QInputDialog
 )
 from PyQt6.QtCore import QTimer, QDate, Qt
-from PyQt6.QtGui import QKeySequence, QShortcut, QAction
+from PyQt6.QtGui import QKeySequence, QShortcut, QAction, QIcon
+import ctypes
+
+def get_app_icon_path():
+    """Εντοπίζει το εικονίδιο της εφαρμογής είτε σε dev mode είτε σε PyInstaller package."""
+    candidates = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "app_icon.ico"),
+        os.path.join(os.path.dirname(sys.executable), "assets", "app_icon.ico"),
+        os.path.join(os.path.dirname(sys.executable), "_internal", "assets", "app_icon.ico"),
+        os.path.join(os.getcwd(), "assets", "app_icon.ico"),
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            return p
+    return ""
 
 from ui_protocol_form import Ui_MainWindow
 from search_dialog import SearchDialog
@@ -49,6 +63,11 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             wf = w.font()
             wf.setBold(True)
             w.setFont(wf)
+
+        # Set Window Icon
+        icon_path = get_app_icon_path()
+        if icon_path:
+            self.setWindowIcon(QIcon(icon_path))
 
         # Ensure database is initialized
         database.init_db()
@@ -1094,12 +1113,25 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
 
 
 def main():
+    # Set Windows AppUserModelID so taskbar groups properly and displays the custom app icon
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("cyber.protocol.desktop.1.0")
+    except Exception:
+        pass
+
     app = QApplication(sys.argv)
+    
+    icon_path = get_app_icon_path()
+    if icon_path:
+        app.setWindowIcon(QIcon(icon_path))
+
     app_font = app.font()
     app_font.setBold(True)
     app.setFont(app_font)
     app.setStyleSheet("* { font-weight: bold; }")
     window = ProtocolMainWindow()
+    if icon_path:
+        window.setWindowIcon(QIcon(icon_path))
     window.show()
     sys.exit(app.exec())
 

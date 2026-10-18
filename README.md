@@ -11,8 +11,8 @@
 
 | Τύπος Πακέτου | Περιγραφή | Σύνδεσμος Λήψης |
 | :--- | :--- | :--- |
-| **🚀 Πρόγραμμα Εγκατάστασης (Installer)** | *Συνιστάται.* Αυτόματη εγκατάσταση, συντομεύσεις στην Επιφάνεια Εργασίας & Μενού Έναρξης, σύστημα αυτόματων ενημερώσεων. | [**⬇️ Λήψη Installer (.exe)**](https://github.com/grcomandos83-cyber/ELECTRONIC-DOCUMENT-PROTOCOL/releases/latest/download/Protocol_Setup_v1.0.0.exe) |
-| **🗜️ Φορητή Έκδοση (Portable ZIP)** | Εκτελείται άμεσα χωρίς εγκατάσταση (π.χ. από USB flash drive). Αποσυμπιέστε και εκτελέστε το `Protokollo.exe`. | [**⬇️ Λήψη Portable (.zip)**](https://github.com/grcomandos83-cyber/ELECTRONIC-DOCUMENT-PROTOCOL/releases/latest/download/Protocol_Portable_v1.0.0.zip) |
+| **🚀 Πρόγραμμα Εγκατάστασης (Installer)** | *Συνιστάται.* Αυτόματη εγκατάσταση, συντομεύσεις στην Επιφάνεια Εργασίας & Μενού Έναρξης, σύστημα αυτόματων ενημερώσεων. | [**⬇️ Λήψη Installer (.exe)**](https://github.com/grcomandos83-cyber/ELECTRONIC-DOCUMENT-PROTOCOL/releases/latest/download/Protocol_Setup_Latest.exe) |
+| **🗜️ Φορητή Έκδοση (Portable ZIP)** | Εκτελείται άμεσα χωρίς εγκατάσταση (π.χ. από USB flash drive). Αποσυμπιέστε και εκτελέστε το `Protokollo.exe`. | [**⬇️ Λήψη Portable (.zip)**](https://github.com/grcomandos83-cyber/ELECTRONIC-DOCUMENT-PROTOCOL/releases/latest/download/Protocol_Portable_Latest.zip) |
 
 👉 **[Δείτε όλες τις διαθέσιμες εκδόσεις & σημειώσεις έκδοσης (GitHub Releases)](https://github.com/grcomandos83-cyber/ELECTRONIC-DOCUMENT-PROTOCOL/releases/latest)**
 

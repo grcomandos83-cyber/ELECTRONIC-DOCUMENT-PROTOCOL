@@ -50,11 +50,12 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 ; Ενημερώνει αποκλειστικά binaries και assets. Η βάση δεδομένων και τα δεδομένα χρήστη μένουν ανέπαφα.
 Source: "dist\Protokollo\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "assets\app_icon.ico"; DestDir: "{app}\assets"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\assets\app_icon.ico"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\assets\app_icon.ico"; IconIndex: 0
 Name: "{group}\Απεγκατάσταση"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\assets\app_icon.ico"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\assets\app_icon.ico"; IconIndex: 0; Tasks: desktopicon
 
 [Run]
 ; 3. Εκκίνηση μέσω του ενδιάμεσου σεναρίου εκκαθάρισης launcher.bat (αόρατα στο παρασκήνιο)
