@@ -1,0 +1,83 @@
+name: Build & Release Installer
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Έκδοση (π.χ. 1.0.0)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build Windows Installer & Release
+    runs-on: windows-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: 📦 Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: 🏷️ Determine Version
+        id: get_version
+        shell: pwsh
+        run: |
+          $ver = "${{ github.event.inputs.version }}"
+          if (-not $ver) {
+            if ($env:GITHUB_REF -like "refs/tags/v*") {
+              $ver = $env:GITHUB_REF.Substring(11) # strip refs/tags/v
+            } else {
+              $ver = (Get-Content version.py | Select-String '__version__ = "(.*)"').Matches.Groups[1].Value
+            }
+          }
+          Write-Host "Building version: $ver"
+          "APP_VERSION=$ver" >> $env:GITHUB_ENV
+          "TAG_NAME=v$ver" >> $env:GITHUB_ENV
+
+      - name: 🔨 Compile with PyInstaller
+        run: |
+          pyinstaller --noconfirm --clean build.spec
+
+      - name: 🛠️ Install Inno Setup
+        run: |
+          choco install innosetup --no-progress --no-color
+
+      - name: 📦 Build Inno Setup Installer
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            $iscc = (Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source
+          }
+          Write-Host "Using ISCC: $iscc"
+          & "$iscc" /DMyAppVersion="$env:APP_VERSION" installer.iss
+
+      - name: 🚀 Create GitHub Release & Upload Installer
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: "Έκδοση ${{ env.APP_VERSION }}"
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            dist_installer/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

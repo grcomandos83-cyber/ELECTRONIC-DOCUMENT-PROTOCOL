@@ -1,0 +1,1479 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1024</width>
+    <height>660</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1024</width>
+    <height>660</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>ΠΡΩΤΟΚΟΛΟ</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+QMainWindow {
+    background-color: rgb(176, 196, 222);
+    font-family: &quot;Segoe UI&quot;, Tahoma, Arial;
+    font-weight: bold;
+}
+QWidget#centralwidget {
+    background-color: rgb(176, 196, 222);
+}
+QWidget {
+    font-weight: bold;
+}
+QLabel, QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QDateEdit, QPushButton, QRadioButton, QCheckBox, QGroupBox {
+    font-weight: bold;
+}
+   </string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QLabel" name="lblSelectYear">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>58</y>
+      <width>140</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Επιλέξτε Έτος</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboSelectYear">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>84</y>
+      <width>140</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+    </property>
+    <item>
+     <property name="text">
+      <string>2026</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>2025</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>2024</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QPushButton" name="btnNewProtocol">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>46</y>
+      <width>180</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+    border: 1px solid #1e7e34;
+    border-radius: 2px;
+}
+QPushButton:hover {
+    background-color: #218838;
+}
+QPushButton:pressed {
+    background-color: #1e7e34;
+}</string>
+    </property>
+    <property name="text">
+     <string>Εισαγωγή Νέου Πρωτοκόλλου</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnEdit">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>78</y>
+      <width>180</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #e67e22;
+    color: white;
+    font-weight: bold;
+    border: 1px solid #d35400;
+    border-radius: 2px;
+}
+QPushButton:hover {
+    background-color: #f39c12;
+}
+QPushButton:pressed {
+    background-color: #d35400;
+}
+QPushButton:disabled {
+    background-color: #bdc3c7;
+    color: #7f8c8d;
+    border: 1px solid #95a5a6;
+}</string>
+    </property>
+    <property name="text">
+     <string>✏️ Επεξεργασία</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnProtocol">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>110</y>
+      <width>180</width>
+      <height>44</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #0078d7;
+    color: white;
+    font-weight: bold;
+    font-size: 11pt;
+    border: 1px solid #005a9e;
+    border-radius: 2px;
+}
+QPushButton:hover {
+    background-color: #1a88e1;
+}
+QPushButton:pressed {
+    background-color: #005a9e;
+}
+QPushButton:disabled {
+    background-color: #8faec9;
+    color: #eaf1f8;
+    border: 1px solid #7a9cb9;
+}</string>
+    </property>
+    <property name="text">
+     <string>Πρωτοκόληση</string>
+    </property>
+   </widget>
+   <widget class="QFrame" name="frameStats">
+    <property name="geometry">
+     <rect>
+      <x>435</x>
+      <y>45</y>
+      <width>205</width>
+      <height>135</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QFrame#frameStats {
+    background-color: rgb(153, 180, 209);
+    border: 1px solid rgb(125, 155, 185);
+}</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <widget class="QLabel" name="lblProtocolNum">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>8</y>
+       <width>185</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Αριθμός Πρωτοκόλλου:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="txtProtocolNum">
+     <property name="geometry">
+      <rect>
+       <x>32</x>
+       <y>32</y>
+       <width>140</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+     </property>
+     <property name="text">
+      <string>2</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="lblCurrentYear">
+     <property name="geometry">
+      <rect>
+       <x>12</x>
+       <y>64</y>
+       <width>85</width>
+       <height>18</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>ΤΡΕΧΟΝ ΕΤΟΣ:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="txtCurrentYear">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>62</y>
+       <width>68</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+     </property>
+     <property name="text">
+      <string>2026</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="lblSearchProto">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>88</y>
+       <width>185</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Αναζητήστε Αριθμό Πρωτοκόλλου</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboSearchProto">
+     <property name="geometry">
+      <rect>
+       <x>22</x>
+       <y>106</y>
+       <width>160</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+     </property>
+     <item>
+      <property name="text">
+       <string>2</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>1</string>
+      </property>
+     </item>
+    </widget>
+   </widget>
+   <widget class="QFrame" name="frameNav">
+    <property name="geometry">
+     <rect>
+      <x>225</x>
+      <y>170</y>
+      <width>175</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QFrame#frameNav {
+    background-color: white;
+    border: 1px solid #b0b0b0;
+}
+QPushButton {
+    border: none;
+    background: transparent;
+    font-weight: bold;
+    padding: 0 4px;
+}
+QPushButton:hover {
+    background-color: #e5f1fb;
+}</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <layout class="QHBoxLayout" name="navLayout">
+     <property name="spacing">
+      <number>1</number>
+     </property>
+     <property name="leftMargin">
+      <number>2</number>
+     </property>
+     <property name="topMargin">
+      <number>1</number>
+     </property>
+     <property name="rightMargin">
+      <number>2</number>
+     </property>
+     <property name="bottomMargin">
+      <number>1</number>
+     </property>
+     <item>
+      <widget class="QPushButton" name="btnNavFirst">
+       <property name="text">
+        <string>|&lt;&lt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnNavPrev">
+       <property name="text">
+        <string>&lt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="txtNavIndex">
+       <property name="maximumSize">
+        <size>
+         <width>26</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid #ccc;</string>
+       </property>
+       <property name="text">
+        <string>2</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblNavOf">
+       <property name="text">
+        <string>από 2</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnNavNext">
+       <property name="text">
+        <string>&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnNavLast">
+       <property name="text">
+        <string>&gt;&gt;|</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QLabel" name="lblClock">
+    <property name="geometry">
+     <rect>
+      <x>650</x>
+      <y>166</y>
+      <width>350</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(35, 87, 164); font-weight: bold;</string>
+    </property>
+    <property name="text">
+     <string>Σάββατο, 17 Οκτωβρίου 2026 - 20:25:22</string>
+    </property>
+   </widget>
+   <widget class="QFrame" name="frameDocType">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>45</y>
+      <width>235</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QFrame#frameDocType {
+    border: 1px solid rgb(140, 160, 180);
+    background-color: transparent;
+}</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <widget class="QLabel" name="lblDocTypeTitle">
+     <property name="geometry">
+      <rect>
+       <x>8</x>
+       <y>6</y>
+       <width>220</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>ΕΙΣΕΡΧΟΜΕΝΟ/ΕΞΕΡΧΟΜΕΝΟ:</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboDocClass">
+     <property name="geometry">
+      <rect>
+       <x>8</x>
+       <y>26</y>
+       <width>218</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+     </property>
+     <item>
+      <property name="text">
+       <string>ΕΙΣΕΡΧΟΜΕΝΟ</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ΕΞΕΡΧΟΜΕΝΟ</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ΜΕ ΑΠΑΝΤΗΣΗ</string>
+      </property>
+     </item>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="lblDateProto">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>215</y>
+      <width>195</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>ΗΜΕΡΟΜΗΝΙΑ:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QDateEdit" name="dateProtocol">
+    <property name="geometry">
+     <rect>
+      <x>212</x>
+      <y>214</y>
+      <width>240</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+    </property>
+    <property name="locale">
+     <locale language="Greek" country="Greece"/>
+    </property>
+    <property name="displayFormat">
+     <string>dddd , d MMMM yyyy</string>
+    </property>
+    <property name="calendarPopup">
+     <bool>true</bool>
+    </property>
+    <property name="date">
+     <date>
+      <year>2026</year>
+      <month>9</month>
+      <day>10</day>
+     </date>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblDateInc">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>247</y>
+      <width>195</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>ΗΜΕΡΟΜΗΝΙΑ ΕΙΣΕΡΧΟΜΕΝΟΥ:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QDateEdit" name="dateIncoming">
+    <property name="geometry">
+     <rect>
+      <x>212</x>
+      <y>246</y>
+      <width>240</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+    </property>
+    <property name="locale">
+     <locale language="Greek" country="Greece"/>
+    </property>
+    <property name="displayFormat">
+     <string>dddd , d MMMM yyyy</string>
+    </property>
+    <property name="calendarPopup">
+     <bool>true</bool>
+    </property>
+    <property name="date">
+     <date>
+      <year>2026</year>
+      <month>9</month>
+      <day>10</day>
+     </date>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblDocType">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>279</y>
+      <width>195</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>ΕΙΔΟΣ ΕΓΓΡΑΦΟΥ:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txtDocType">
+    <property name="geometry">
+     <rect>
+      <x>212</x>
+      <y>278</y>
+      <width>240</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+    </property>
+    <property name="text">
+     <string>ΑΙΤΗΣΗ2</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblOrigin">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>311</y>
+      <width>195</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>ΥΠΗΡΕΣΙΑ ΠΟΥ ΠΡΟΕΡΧΕΤΑΙ:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txtOrigin">
+    <property name="geometry">
+     <rect>
+      <x>212</x>
+      <y>310</y>
+      <width>240</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+    </property>
+    <property name="text">
+     <string>ΓΡΑΦΕΙΟ1</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblIncDesc">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>343</y>
+      <width>195</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>ΠΕΡΙΓΡΑΦΗ ΕΙΣΕΡΧΟΜΕΝΟΥ:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+    </property>
+   </widget>
+   <widget class="QTextEdit" name="txtIncomingDesc">
+    <property name="geometry">
+     <rect>
+      <x>212</x>
+      <y>342</y>
+      <width>240</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblPhotoInc">
+    <property name="geometry">
+     <rect>
+      <x>25</x>
+      <y>428</y>
+      <width>180</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>ΦΩΤΟ ΕΙΣΕΡΧΟΜΕΝΟΥ:</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnInsertPhotoInc">
+    <property name="geometry">
+     <rect>
+      <x>315</x>
+      <y>424</y>
+      <width>65</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; border: 1px solid #7f9db9; border-radius: 2px;</string>
+    </property>
+    <property name="text">
+     <string>Εισαγωγή</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnOpenPhotoInc">
+    <property name="geometry">
+     <rect>
+      <x>385</x>
+      <y>424</y>
+      <width>65</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; border: 1px solid #7f9db9; border-radius: 2px;</string>
+    </property>
+    <property name="text">
+     <string>Άνοιγμα</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txtPhotoIncPath">
+    <property name="geometry">
+     <rect>
+      <x>25</x>
+      <y>450</y>
+      <width>427</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblOffice">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>488</y>
+      <width>195</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>ΓΡΑΦΕΙΟ ΔΙΕΚΠΕΡΑΙΩΣΗΣ:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txtOffice">
+    <property name="geometry">
+     <rect>
+      <x>208</x>
+      <y>486</y>
+      <width>244</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblCompleted">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>518</y>
+      <width>195</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>ΔΙΕΚΠΕΡΑΙΩΜΕΝΟ:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="chkCompleted">
+    <property name="geometry">
+     <rect>
+      <x>208</x>
+      <y>518</y>
+      <width>24</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblRemarks">
+    <property name="geometry">
+     <rect>
+      <x>15</x>
+      <y>545</y>
+      <width>120</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>ΠΑΡΑΤΗΡΗΣΕΙΣ</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+    </property>
+   </widget>
+   <widget class="QTextEdit" name="txtRemarks">
+    <property name="geometry">
+     <rect>
+      <x>142</x>
+      <y>545</y>
+      <width>295</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="grpOutgoing">
+    <property name="geometry">
+     <rect>
+      <x>492</x>
+      <y>210</y>
+      <width>504</width>
+      <height>268</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QGroupBox#grpOutgoing {
+    background-color: rgb(218, 165, 32);
+    border: 2px groove rgb(184, 134, 11);
+    margin-top: 8px;
+    font-weight: bold;
+}
+QGroupBox#grpOutgoing::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 8px;
+    padding: 0 4px;
+    color: rgb(60, 40, 0);
+}
+QGroupBox#grpOutgoing QWidget:disabled {
+    background-color: #dcdcdc;
+    color: #777777;
+    border: 1px solid #aaaaaa;
+}</string>
+    </property>
+    <property name="title">
+     <string>ΕΞΕΡΧΟΜΕΝΑ</string>
+    </property>
+    <widget class="QLabel" name="lblDateOut">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>25</y>
+       <width>200</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>ΗΜΕΡΟΜΗΝΙΑ ΕΞΕΡΧΟΜΕΝΟΥ:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QDateEdit" name="dateOutgoing">
+     <property name="geometry">
+      <rect>
+       <x>226</x>
+       <y>24</y>
+       <width>250</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+     </property>
+     <property name="locale">
+      <locale language="Greek" country="Greece"/>
+     </property>
+     <property name="displayFormat">
+      <string>dddd , d MMMM yyyy</string>
+     </property>
+     <property name="calendarPopup">
+      <bool>true</bool>
+     </property>
+     <property name="date">
+      <date>
+       <year>2026</year>
+       <month>9</month>
+       <day>10</day>
+      </date>
+     </property>
+    </widget>
+    <widget class="QLabel" name="lblDest">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>80</y>
+       <width>210</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>ΥΠΗΡΕΣΙΑ ΠΟΥ ΑΠΟΣΤΕΛΛΕΤΑΙ:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="txtDestination">
+     <property name="geometry">
+      <rect>
+       <x>226</x>
+       <y>79</y>
+       <width>255</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="lblOutDesc">
+     <property name="geometry">
+      <rect>
+       <x>15</x>
+       <y>120</y>
+       <width>205</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>ΠΕΡΙΓΡΑΦΗ ΕΞΕΡΧΟΜΕΝΟΥ:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="txtOutgoingDesc">
+     <property name="geometry">
+      <rect>
+       <x>226</x>
+       <y>120</y>
+       <width>255</width>
+       <height>75</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="lblPhotoOut">
+     <property name="geometry">
+      <rect>
+       <x>22</x>
+       <y>206</y>
+       <width>180</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>ΦΩΤΟ ΕΞΕΡΧΟΜΕΝΟΥ:</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnInsertPhotoOut">
+     <property name="geometry">
+      <rect>
+       <x>352</x>
+       <y>202</y>
+       <width>65</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: white; border: 1px solid #7f9db9; border-radius: 2px;</string>
+     </property>
+     <property name="text">
+      <string>Εισαγωγή</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnOpenPhotoOut">
+     <property name="geometry">
+      <rect>
+       <x>422</x>
+       <y>202</y>
+       <width>65</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: white; border: 1px solid #7f9db9; border-radius: 2px;</string>
+     </property>
+     <property name="text">
+      <string>Άνοιγμα</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="txtPhotoOutPath">
+     <property name="geometry">
+      <rect>
+       <x>22</x>
+       <y>226</y>
+       <width>459</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="grpSearch">
+    <property name="geometry">
+     <rect>
+      <x>494</x>
+      <y>490</y>
+      <width>500</width>
+      <height>130</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QGroupBox#grpSearch {
+    border: 1px solid rgb(140, 160, 180);
+    margin-top: 8px;
+    font-weight: bold;
+}
+QGroupBox#grpSearch::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 8px;
+    padding: 0 4px;
+}</string>
+    </property>
+    <property name="title">
+     <string>ΑΝΑΖΗΤΗΣΕΙΣ</string>
+    </property>
+    <widget class="QRadioButton" name="rbOrigin">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>22</y>
+       <width>95</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Προέρχεται</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="rbDest">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>22</y>
+       <width>110</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Αποστέλλεται</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="rbOffice">
+     <property name="geometry">
+      <rect>
+       <x>320</x>
+       <y>22</y>
+       <width>165</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Γραφείο Διεκπεραίωσης</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="txtSearchQuery">
+     <property name="geometry">
+      <rect>
+       <x>75</x>
+       <y>50</y>
+       <width>415</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnClearFilter">
+     <property name="geometry">
+      <rect>
+       <x>70</x>
+       <y>80</y>
+       <width>130</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: white; border: 1px solid #7f9db9; border-radius: 2px;</string>
+     </property>
+     <property name="text">
+      <string>Κατάργηση Φίλτρου</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="rbDescInc">
+     <property name="geometry">
+      <rect>
+       <x>215</x>
+       <y>82</y>
+       <width>120</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>ΠΕΡΙΓΡ. ΕΙΣΕΡΧ.</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="rbDescOut">
+     <property name="geometry">
+      <rect>
+       <x>345</x>
+       <y>82</y>
+       <width>120</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>ΠΕΡΙΓΡ. ΕΞΕΡΧ.</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1024</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>Αρχείο</string>
+    </property>
+    <addaction name="actionNewYear"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuBackup">
+    <property name="title">
+     <string>Αντίγραφα Ασφαλείας</string>
+    </property>
+    <addaction name="actionBackup"/>
+    <addaction name="actionRestore"/>
+   </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Εργαλεία</string>
+    </property>
+    <widget class="QMenu" name="menuAdvancedSearch">
+     <property name="title">
+      <string>ΣΥΝΘΕΤΗ ΑΝΑΖΗΤΗΣΗ</string>
+     </property>
+     <widget class="QMenu" name="menuSearchIncoming">
+      <property name="title">
+       <string>ΕΙΣΕΡΧΟΜΕΝΑ</string>
+      </property>
+      <addaction name="actionIncDateProto"/>
+      <addaction name="actionIncDateDoc"/>
+     </widget>
+     <widget class="QMenu" name="menuSearchOutgoing">
+      <property name="title">
+       <string>ΕΞΕΡΧΟΜΕΝΑ</string>
+      </property>
+      <addaction name="actionOutDateProto"/>
+      <addaction name="actionOutDateDoc"/>
+     </widget>
+     <addaction name="menuSearchIncoming"/>
+     <addaction name="menuSearchOutgoing"/>
+    </widget>
+    <addaction name="menuAdvancedSearch"/>
+    <addaction name="separator"/>
+    <addaction name="actionExport"/>
+    <addaction name="separator"/>
+    <addaction name="actionResetDB"/>
+   </widget>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>About</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuBackup"/>
+   <addaction name="menuTools"/>
+   <addaction name="menuAbout"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionNewYear">
+   <property name="text">
+    <string>Εισαγωγή Νέου Έτους</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Έξοδος</string>
+   </property>
+  </action>
+  <action name="actionIncDateProto">
+   <property name="text">
+    <string>ΜΕ ΗΜΕΡΟΜΗΝΙΑ ΠΡΩΤΟΚΟΛΛΗΣΗΣ</string>
+   </property>
+  </action>
+  <action name="actionIncDateDoc">
+   <property name="text">
+    <string>ΜΕ ΗΜΕΡΟΜΗΝΙΑ ΕΓΓΡΑΦΟΥ</string>
+   </property>
+  </action>
+  <action name="actionOutDateProto">
+   <property name="text">
+    <string>ΜΕ ΗΜΕΡΟΜΗΝΙΑ ΠΡΩΤΟΚΟΛΛΗΣΗΣ</string>
+   </property>
+  </action>
+  <action name="actionOutDateDoc">
+   <property name="text">
+    <string>ΜΕ ΗΜΕΡΟΜΗΝΙΑ ΕΓΓΡΑΦΟΥ</string>
+   </property>
+  </action>
+  <action name="actionBackup">
+   <property name="text">
+    <string>Δημιουργία Αντιγράφου Ασφαλείας</string>
+   </property>
+  </action>
+  <action name="actionRestore">
+   <property name="text">
+    <string>Επαναφορά από Αντίγραφο</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Εξαγωγή σε Excel/CSV</string>
+   </property>
+  </action>
+  <action name="actionResetDB">
+   <property name="text">
+    <string>Διαγραφή και Επαναφορά Βάσης Δεδομένων...</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>Σχετικά με την εφαρμογή</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

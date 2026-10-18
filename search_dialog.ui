@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SearchDialog</class>
+ <widget class="QDialog" name="SearchDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>920</width>
+    <height>620</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>850</width>
+    <height>550</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Σύνθετη Αναζήτηση Πρωτοκόλλου</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+QDialog {
+    background-color: rgb(240, 244, 248);
+    font-family: &quot;Segoe UI&quot;, Tahoma, Arial;
+}
+QGroupBox {
+    font-weight: bold;
+    border: 1px solid #7f9db9;
+    border-radius: 4px;
+    margin-top: 10px;
+    padding-top: 10px;
+    background-color: white;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 10px;
+    padding: 0 5px;
+    color: #1a4e8a;
+}
+   </string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="spacing">
+    <number>10</number>
+   </property>
+   <property name="leftMargin">
+    <number>12</number>
+   </property>
+   <property name="topMargin">
+    <number>12</number>
+   </property>
+   <property name="rightMargin">
+    <number>12</number>
+   </property>
+   <property name="bottomMargin">
+    <number>12</number>
+   </property>
+   <item>
+    <!-- TOP GROUP: CRITERIA -->
+    <widget class="QGroupBox" name="grpCriteria">
+     <property name="title">
+      <string>Κριτήρια Αναζήτησης</string>
+     </property>
+     <layout class="QVBoxLayout" name="criteriaLayout">
+      <property name="spacing">
+       <number>8</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="lblModeTitle">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: #005a9e;</string>
+        </property>
+        <property name="text">
+         <string>Αναζήτηση: ΕΙΣΕΡΧΟΜΕΝΑ (ΜΕ ΗΜΕΡΟΜΗΝΙΑ ΠΡΩΤΟΚΟΛΛΗΣΗΣ)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <!-- ROW 1: DATES & YEAR -->
+       <layout class="QHBoxLayout" name="rowDates">
+        <property name="spacing">
+         <number>8</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="lblDateFrom">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Από Ημερομηνία:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDateEdit" name="dateFrom">
+          <property name="calendarPopup">
+           <bool>true</bool>
+          </property>
+          <property name="locale">
+           <locale language="Greek" country="Greece"/>
+          </property>
+          <property name="displayFormat">
+           <string>dd/MM/yyyy</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblDateTo">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Έως Ημερομηνία:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDateEdit" name="dateTo">
+          <property name="calendarPopup">
+           <bool>true</bool>
+          </property>
+          <property name="locale">
+           <locale language="Greek" country="Greece"/>
+          </property>
+          <property name="displayFormat">
+           <string>dd/MM/yyyy</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblYear">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Έτος:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboFilterYear">
+          <property name="minimumSize">
+           <size>
+            <width>85</width>
+            <height>0</height>
+           </size>
+          </property>
+          <item>
+           <property name="text">
+            <string>Όλα</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <!-- ROW 2: TEXT FILTERS -->
+       <layout class="QHBoxLayout" name="rowFilters">
+        <property name="spacing">
+         <number>8</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="lblFilterEntity">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Υπηρεσία:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="txtFilterEntity">
+          <property name="placeholderText">
+           <string>Προέλευση / Προορισμός...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblFilterDocType">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Είδος Εγγράφου:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="txtFilterDocType">
+          <property name="placeholderText">
+           <string>π.χ. ΑΙΤΗΣΗ...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblFilterDesc">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Περιγραφή:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="txtFilterDesc">
+          <property name="placeholderText">
+           <string>Λέξη-κλειδί...</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <!-- ROW 3: ACTION BUTTONS -->
+       <layout class="QHBoxLayout" name="rowButtons">
+        <property name="spacing">
+         <number>10</number>
+        </property>
+        <item>
+         <spacer name="spacer1">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnSearch">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton {
+    background-color: #0078d7;
+    color: white;
+    padding: 6px 20px;
+    border: 1px solid #005a9e;
+    border-radius: 3px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #106ebe;
+}</string>
+          </property>
+          <property name="text">
+           <string>Αναζήτηση</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnReset">
+          <property name="styleSheet">
+           <string notr="true">padding: 6px 14px;</string>
+          </property>
+          <property name="text">
+           <string>Καθαρισμός Φίλτρων</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnExport">
+          <property name="styleSheet">
+           <string notr="true">padding: 6px 14px;</string>
+          </property>
+          <property name="text">
+           <string>Εξαγωγή σε CSV</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <!-- MIDDLE: TABLE RESULTS -->
+    <widget class="QTableWidget" name="tableResults">
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+      </font>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+     <attribute name="horizontalHeaderStretchLastSection">
+      <bool>true</bool>
+     </attribute>
+    </widget>
+   </item>
+   <item>
+    <!-- BOTTOM: STATUS & ACTIONS -->
+    <layout class="QHBoxLayout" name="bottomLayout">
+     <item>
+      <widget class="QLabel" name="lblStatus">
+       <property name="font">
+        <font>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: #2b579a;</string>
+       </property>
+       <property name="text">
+        <string>Βρέθηκαν 0 εγγραφές. (Κάντε διπλό κλικ σε μια γραμμή για προβολή στην κεντρική φόρμα)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacer2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnOpenSelected">
+       <property name="font">
+        <font>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">padding: 6px 16px;</string>
+       </property>
+       <property name="text">
+        <string>Προβολή στην Κεντρική Φόρμα</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnClose">
+       <property name="styleSheet">
+        <string notr="true">padding: 6px 16px;</string>
+       </property>
+       <property name="text">
+        <string>Κλείσιμο</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
