@@ -44,24 +44,15 @@ class UpdateCheckThread(QThread):
             latest_tag = data.get("tag_name", "").lstrip("v").strip()
             release_notes = data.get("body", "") or ""
 
-            # Διάθεση Διπλού Πακέτου: Προτεραιότητα πάντοτε στο πρόγραμμα εγκατάστασης (Setup .exe)
+            # Αναζήτηση του προγράμματος εγκατάστασης (Setup .exe)
             download_url = ""
             assets = data.get("assets", [])
 
-            # 1η προτεραιότητα: αρχείο setup .exe
             for asset in assets:
                 name = asset.get("name", "").lower()
-                if name.endswith(".exe") and "setup" in name:
+                if name.endswith(".exe") and ("setup" in name or "install" in name):
                     download_url = asset["browser_download_url"]
                     break
-
-            # 2η προτεραιότητα: οποιοδήποτε άλλο .exe
-            if not download_url:
-                for asset in assets:
-                    name = asset.get("name", "").lower()
-                    if name.endswith(".exe"):
-                        download_url = asset["browser_download_url"]
-                        break
 
             if not latest_tag or not download_url:
                 self.no_update.emit()
@@ -286,40 +277,53 @@ class UpdateDialog(QDialog):
     def on_download_finished(self, filepath):
         """
         Εκτέλεση Αναβάθμισης & Αποτροπή DLL Crashes:
-        1. Καθαρίζει ρητά τις μεταβλητές περιβάλλοντος του PyInstaller bootloader.
-        2. Καλεί τον Inno Setup installer (/SILENT).
-        3. Το installer.iss έχει RestartManagerSupport=no και εκτελεί το launcher.bat.
+        1. Ενημερώνει τον χρήστη ΠΡΙΝ ξεκινήσει ο installer (ώστε να μην κλειδώσουν τα αρχεία).
+        2. Καθαρίζει ρητά όλες τις μεταβλητές περιβάλλοντος του PyInstaller.
+        3. Καλεί τον Inno Setup installer και τερματίζει ΑΜΕΣΑ την εφαρμογή.
         """
-        self.lbl_details.setText("✅ Η λήψη ολοκληρώθηκε! Εκκίνηση ασφαλούς αναβάθμισης...")
+        self.lbl_details.setText("✅ Η λήψη ολοκληρώθηκε! Προετοιμασία εγκατάστασης...")
 
-        try:
-            # ΚΑΘΑΡΙΣΜΟΣ ΜΕΤΑΒΛΗΤΩΝ ΠΕΡΙΒΑΛΛΟΝΤΟΣ PYINSTALLER
-            # Αποτρέπει το κλασικό σφάλμα 'Failed to load Python DLL'
-            clean_env = os.environ.copy()
-            for pyinstaller_var in (
-                "_MEIPASS2",
-                "_MEIPASS",
-                "PYTHONPATH",
-                "PYTHONHOME",
-                "PYINSTALLER_STRICT_UNPACK_PROCESS"
-            ):
-                clean_env.pop(pyinstaller_var, None)
-
-            # Εκτέλεση Inno Setup installer σε σιωπηλή λειτουργία
-            subprocess.Popen(
-                [filepath, "/SILENT"],
-                env=clean_env,
-                cwd=tempfile.gettempdir(),
-                shell=False
-            )
-
+        # Αν δεν τρέχει ως compiled .exe (π.χ. τρέχει από τον κώδικα κατά το development)
+        if not getattr(sys, "frozen", False):
             QMessageBox.information(
                 self,
-                "Αναβάθμιση σε εξέλιξη",
-                "Η εφαρμογή θα κλείσει τώρα για να ολοκληρωθεί η εγκατάσταση της νέας έκδοσης.\n\n"
-                "Όλα τα δεδομένα και οι εγγραφές σας παραμένουν απολύτως ασφαλή."
+                "Δοκιμαστική Λειτουργία (Dev Mode)",
+                f"Το πακέτο κατέβηκε επιτυχώς στο:\n{filepath}\n\n"
+                "Επειδή τρέχετε από πηγαίο κώδικα, η εγκατάσταση δεν θα εκτελεστεί αυτόματα."
             )
-            sys.exit(0)
+            self.accept()
+            return
+
+        # 1. Ενημέρωση χρήστη ΠΡΙΝ ξεκινήσει το Popen (ώστε να μην κλειδώσουν τα αρχεία)
+        QMessageBox.information(
+            self,
+            "Αναβάθμιση έτοιμη",
+            "Η λήψη ολοκληρώθηκε! Πατήστε ΟΚ για να κλείσει η εφαρμογή "
+            "και να εγκατασταθεί αυτόματα η νέα έκδοση.\n\n"
+            "Όλα τα δεδομένα και οι εγγραφές σας παραμένουν ασφαλή."
+        )
+
+        try:
+            # 2. ΠΛΗΡΗΣ ΚΑΘΑΡΙΣΜΟΣ ΜΕΤΑΒΛΗΤΩΝ ΠΕΡΙΒΑΛΛΟΝΤΟΣ PYINSTALLER
+            clean_env = os.environ.copy()
+            for k in list(clean_env.keys()):
+                if k.startswith(("_MEI", "_PYI", "PYINSTALLER")) or k in ("PYTHONPATH", "PYTHONHOME"):
+                    clean_env.pop(k, None)
+            clean_env["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
+
+            # 3. Εκτέλεση Inno Setup installer σε σιωπηλή λειτουργία
+            subprocess.Popen(
+                [filepath, "/SILENT", "/CLOSEAPPLICATIONS", "/NORESTART"],
+                env=clean_env,
+                cwd=tempfile.gettempdir(),
+                shell=False,
+                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+            )
+
+            # 4. ΑΜΕΣΟΣ τερματισμός της εφαρμογής για απελευθέρωση των αρχείων
+            from PyQt6.QtWidgets import QApplication
+            QApplication.quit()
+            os._exit(0)
 
         except Exception as e:
             QMessageBox.critical(
