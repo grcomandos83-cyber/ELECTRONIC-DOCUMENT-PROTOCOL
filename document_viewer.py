@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import (
     QLineEdit, QToolBar, QWidget, QScrollArea, QMessageBox,
     QFrame, QSizePolicy
 )
-from PyQt6.QtCore import Qt, QSize, QPointF
+from PyQt6.QtCore import Qt, QSize, QPointF, QEvent
 from PyQt6.QtGui import QIcon, QPixmap, QImage, QTransform, QPainter, QKeySequence, QShortcut
 from PyQt6.QtPdf import QPdfDocument
 from PyQt6.QtPdfWidgets import QPdfView
@@ -44,6 +44,13 @@ class DocumentViewerDialog(QDialog):
             self.setWindowIcon(app_icon)
         self.resize(1050, 850)
         self.setMinimumSize(750, 550)
+
+        # Ενεργοποίηση κουμπιών μεγιστοποίησης και ελαχιστοποίησης στο παράθυρο
+        self.setWindowFlags(
+            Qt.WindowType.Window |
+            Qt.WindowType.WindowMinMaxButtonsHint |
+            Qt.WindowType.WindowCloseButtonHint
+        )
 
         # Main Layout
         main_layout = QVBoxLayout(self)
@@ -175,6 +182,11 @@ class DocumentViewerDialog(QDialog):
         self.btn_external.setToolTip("Άνοιγμα με την προεπιλεγμένη εφαρμογή του συστήματος")
         self.btn_external.clicked.connect(self.open_external)
 
+        self.btn_maximize = QPushButton("🗖", self.toolbar_widget)
+        self.btn_maximize.setToolTip("Μεγιστοποίηση / Επαναφορά παραθύρου (F11)")
+        self.btn_maximize.setStyleSheet("background-color: #334155; border-color: #475569; font-weight: bold; width: 22px;")
+        self.btn_maximize.clicked.connect(self.toggle_maximize)
+
         self.btn_close = QPushButton("✕", self.toolbar_widget)
         self.btn_close.setToolTip("Κλείσιμο προβολέα (Esc)")
         self.btn_close.setStyleSheet("background-color: #e11d48; border-color: #be123c; font-weight: bold; width: 20px;")
@@ -182,6 +194,7 @@ class DocumentViewerDialog(QDialog):
 
         tb_layout.addWidget(self.btn_print)
         tb_layout.addWidget(self.btn_external)
+        tb_layout.addWidget(self.btn_maximize)
         tb_layout.addWidget(self.btn_close)
 
         main_layout.addWidget(self.toolbar_widget)
@@ -232,6 +245,7 @@ class DocumentViewerDialog(QDialog):
         QShortcut(QKeySequence("="), self, self.zoom_in)
         QShortcut(QKeySequence("-"), self, self.zoom_out)
         QShortcut(QKeySequence("Ctrl+P"), self, self.print_document)
+        QShortcut(QKeySequence("F11"), self, self.toggle_maximize)
         QShortcut(QKeySequence(Qt.Key.Key_PageUp), self, self.prev_page)
         QShortcut(QKeySequence(Qt.Key.Key_PageDown), self, self.next_page)
 
@@ -436,6 +450,27 @@ class DocumentViewerDialog(QDialog):
             QMessageBox.critical(self, "Σφάλμα Εκτύπωσης", f"Αποτυχία εκτύπωσης: {e}")
         finally:
             painter.end()
+
+    def toggle_maximize(self):
+        if self.isMaximized():
+            self.showNormal()
+            self.btn_maximize.setText("🗖")
+            self.btn_maximize.setToolTip("Μεγιστοποίηση παραθύρου (F11)")
+        else:
+            self.showMaximized()
+            self.btn_maximize.setText("🗗")
+            self.btn_maximize.setToolTip("Επαναφορά μεγέθους παραθύρου (F11)")
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.WindowStateChange:
+            if hasattr(self, 'btn_maximize'):
+                if self.isMaximized():
+                    self.btn_maximize.setText("🗗")
+                    self.btn_maximize.setToolTip("Επαναφορά μεγέθους παραθύρου (F11)")
+                else:
+                    self.btn_maximize.setText("🗖")
+                    self.btn_maximize.setToolTip("Μεγιστοποίηση παραθύρου (F11)")
+        super().changeEvent(event)
 
     def closeEvent(self, event):
         try:
