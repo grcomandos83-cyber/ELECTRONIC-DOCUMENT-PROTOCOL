@@ -40,6 +40,7 @@ from search_dialog import SearchDialog
 import database
 from version import __version__, __app_name__, GITHUB_REPO
 from updater import AutoUpdater
+from document_viewer import DocumentViewerDialog
 
 GREEK_WEEKDAYS = [
     "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο", "Κυριακή"
@@ -844,10 +845,23 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             target_line_edit.setText(dest)
 
     def open_photo(self, path):
-        if path and os.path.exists(path):
-            os.startfile(os.path.abspath(path))
+        if not path or not path.strip():
+            QMessageBox.warning(self, "Προσοχή", "Δεν έχει καθοριστεί διαδρομή αρχείου για άνοιγμα.")
+            return
+
+        full_path = os.path.abspath(path.strip())
+        if not os.path.exists(full_path):
+            QMessageBox.warning(self, "Προσοχή", f"Το αρχείο δεν βρέθηκε στη διαδρομή:\n{full_path}")
+            return
+
+        ext = os.path.splitext(full_path)[1].lower()
+        if ext in (".pdf", ".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp"):
+            # Άνοιγμα με τον ενσωματωμένο προβολέα εγγράφων
+            viewer = DocumentViewerDialog(full_path, parent=self, app_icon=self.windowIcon())
+            viewer.exec()
         else:
-            QMessageBox.warning(self, "Προσοχή", "Το αρχείο δεν υπάρχει ή δεν έχει καθοριστεί διαδρομή.")
+            # Άνοιγμα με την προεπιλεγμένη εφαρμογή του συστήματος (π.χ. Word, Excel)
+            os.startfile(full_path)
 
     # ---------------- PROTOCOL BUTTON COLOR STATE & UNSAVED CHANGES ----------------
     def set_protocol_button_state(self, is_new_or_dirty: bool):
