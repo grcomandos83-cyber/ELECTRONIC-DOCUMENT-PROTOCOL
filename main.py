@@ -836,8 +836,8 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
     # ---------------- ATTACHMENTS ----------------
     def browse_photo(self, target_line_edit):
         file_path, _ = QFileDialog.getOpenFileName(
-            self, "Επιλογή Φωτογραφίας/Αρχείου", "",
-            "Όλα τα υποστηριζόμενα (*.jpg *.jpeg *.png *.bmp *.pdf);;Εικόνες (*.jpg *.jpeg *.png *.bmp);;PDF (*.pdf);;Όλα τα αρχεία (*.*)"
+            self, "Επιλογή Συνημμένου Εγγράφου", "",
+            "Όλα τα υποστηριζόμενα (*.pdf *.jpg *.jpeg *.png *.bmp *.docx *.xlsx);;Αρχεία PDF (*.pdf);;Εικόνες / Σαρώσεις (*.jpg *.jpeg *.png *.bmp);;Έγγραφα Office (*.docx *.xlsx);;Όλα τα αρχεία (*.*)"
         )
         if file_path:
             dest = database.copy_to_attachments(file_path)

@@ -788,7 +788,7 @@ QPushButton:hover {
      <rect>
       <x>25</x>
       <y>428</y>
-      <width>180</width>
+      <width>220</width>
       <height>20</height>
      </rect>
     </property>
@@ -800,7 +800,7 @@ QPushButton:hover {
      </font>
     </property>
     <property name="text">
-     <string>ΦΩΤΟ ΕΙΣΕΡΧΟΜΕΝΟΥ:</string>
+     <string>ΣΥΝΗΜΜΕΝΟ ΕΓΓΡΑΦΟ:</string>
     </property>
    </widget>
    <widget class="QPushButton" name="btnInsertPhotoInc">
@@ -1124,7 +1124,7 @@ QGroupBox#grpOutgoing QWidget:disabled {
       <rect>
        <x>22</x>
        <y>206</y>
-       <width>180</width>
+       <width>220</width>
        <height>20</height>
       </rect>
      </property>
@@ -1136,7 +1136,7 @@ QGroupBox#grpOutgoing QWidget:disabled {
       </font>
      </property>
      <property name="text">
-      <string>ΦΩΤΟ ΕΞΕΡΧΟΜΕΝΟΥ:</string>
+      <string>ΣΥΝΗΜΜΕΝΟ ΕΓΓΡΑΦΟ:</string>
      </property>
     </widget>
     <widget class="QPushButton" name="btnInsertPhotoOut">
