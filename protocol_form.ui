@@ -852,7 +852,7 @@ QPushButton:hover {
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>488</y>
+      <y>480</y>
       <width>195</width>
       <height>22</height>
      </rect>
@@ -875,7 +875,7 @@ QPushButton:hover {
     <property name="geometry">
      <rect>
       <x>208</x>
-      <y>486</y>
+      <y>478</y>
       <width>244</width>
       <height>24</height>
      </rect>
@@ -884,11 +884,56 @@ QPushButton:hover {
      <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
     </property>
    </widget>
+   <widget class="QLabel" name="lblArchiveFolder">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>508</y>
+      <width>195</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>ΦΑΚΕΛΟΣ ΑΡΧΕΙΟΘΕΤΗΣΗΣ:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboArchiveFolder">
+    <property name="geometry">
+     <rect>
+      <x>208</x>
+      <y>506</y>
+      <width>244</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; border: 1px solid #7f9db9;</string>
+    </property>
+    <property name="editable">
+     <bool>true</bool>
+    </property>
+   </widget>
    <widget class="QLabel" name="lblCompleted">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>518</y>
+      <y>536</y>
       <width>195</width>
       <height>22</height>
      </rect>
@@ -911,7 +956,7 @@ QPushButton:hover {
     <property name="geometry">
      <rect>
       <x>208</x>
-      <y>518</y>
+      <y>536</y>
       <width>24</width>
       <height>22</height>
      </rect>
@@ -924,7 +969,7 @@ QPushButton:hover {
     <property name="geometry">
      <rect>
       <x>15</x>
-      <y>545</y>
+      <y>562</y>
       <width>120</width>
       <height>22</height>
      </rect>
@@ -947,9 +992,9 @@ QPushButton:hover {
     <property name="geometry">
      <rect>
       <x>142</x>
-      <y>545</y>
+      <y>562</y>
       <width>295</width>
-      <height>75</height>
+      <height>60</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -1220,7 +1265,7 @@ QGroupBox#grpSearch::title {
     <widget class="QRadioButton" name="rbOrigin">
      <property name="geometry">
       <rect>
-       <x>90</x>
+       <x>10</x>
        <y>22</y>
        <width>95</width>
        <height>20</height>
@@ -1242,9 +1287,9 @@ QGroupBox#grpSearch::title {
     <widget class="QRadioButton" name="rbDest">
      <property name="geometry">
       <rect>
-       <x>200</x>
+       <x>110</x>
        <y>22</y>
-       <width>110</width>
+       <width>105</width>
        <height>20</height>
       </rect>
      </property>
@@ -1261,9 +1306,9 @@ QGroupBox#grpSearch::title {
     <widget class="QRadioButton" name="rbOffice">
      <property name="geometry">
       <rect>
-       <x>320</x>
+       <x>220</x>
        <y>22</y>
-       <width>165</width>
+       <width>130</width>
        <height>20</height>
       </rect>
      </property>
@@ -1274,7 +1319,26 @@ QGroupBox#grpSearch::title {
       </font>
      </property>
      <property name="text">
-      <string>Γραφείο Διεκπεραίωσης</string>
+      <string>Γραφείο Διεκπ.</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="rbArchive">
+     <property name="geometry">
+      <rect>
+       <x>355</x>
+       <y>22</y>
+       <width>135</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Φάκ. Αρχείου</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="txtSearchQuery">

@@ -78,7 +78,7 @@ class SearchDialog(QDialog, Ui_SearchDialog):
     def setup_table(self):
         headers = [
             "Α/Α Πρωτ.", "Έτος", "Ημ. Πρωτοκόλλου", "Κατηγορία",
-            "Ημ. Εγγράφου", "Είδος Εγγράφου", "Υπηρεσία", "Περιγραφή", "Διεκπεραιωμένο"
+            "Ημ. Εγγράφου", "Είδος Εγγράφου", "Υπηρεσία", "Περιγραφή", "Φάκελος Αρχείου", "Διεκπεραιωμένο"
         ]
         self.tableResults.setColumnCount(len(headers))
         self.tableResults.setHorizontalHeaderLabels(headers)
@@ -93,6 +93,7 @@ class SearchDialog(QDialog, Ui_SearchDialog):
         header.setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(7, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(8, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(9, QHeaderView.ResizeMode.ResizeToContents)
 
     def get_actual_date_field(self):
         if self.date_field_type == "protocol_date":
@@ -177,11 +178,16 @@ class SearchDialog(QDialog, Ui_SearchDialog):
                 desc = r.get("incoming_desc") or ""
             self.tableResults.setItem(row, 7, QTableWidgetItem(desc))
 
-            # 8: Completed
+            # 8: Archive Folder
+            item_arch = QTableWidgetItem(r.get("archive_folder") or "")
+            item_arch.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.tableResults.setItem(row, 8, item_arch)
+
+            # 9: Completed
             completed = "ΝΑΙ" if r.get("completed") else "ΟΧΙ"
             item_comp = QTableWidgetItem(completed)
             item_comp.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.tableResults.setItem(row, 8, item_comp)
+            self.tableResults.setItem(row, 9, item_comp)
 
         self.lblStatus.setText(
             f"Βρέθηκαν {len(records)} εγγραφές. (Κάντε διπλό κλικ σε μια γραμμή για προβολή στην κεντρική φόρμα)"
@@ -233,13 +239,14 @@ class SearchDialog(QDialog, Ui_SearchDialog):
                     writer.writerow([
                         "Α/Α Πρωτοκόλλου", "Έτος", "Ημ. Πρωτοκόλλησης", "Κατηγορία",
                         "Ημ. Εισερχομένου", "Είδος Εγγράφου", "Προέλευση", "Περιγραφή Εισερχ.",
-                        "Γραφείο", "Διεκπεραιωμένο", "Ημ. Εξερχομένου", "Προορισμός", "Περιγραφή Εξερχ."
+                        "Γραφείο", "Φάκελος Αρχείου", "Διεκπεραιωμένο", "Ημ. Εξερχομένου", "Προορισμός", "Περιγραφή Εξερχ."
                     ])
                     for r in self.results:
                         writer.writerow([
                             r.get("protocol_number"), r.get("year"), r.get("protocol_date"),
                             r.get("doc_class"), r.get("incoming_date"), r.get("doc_type"),
                             r.get("incoming_origin"), r.get("incoming_desc"), r.get("processing_office"),
+                            r.get("archive_folder", ""),
                             "ΝΑΙ" if r.get("completed") else "ΟΧΙ",
                             r.get("outgoing_date"), r.get("outgoing_dest"), r.get("outgoing_desc")
                         ])

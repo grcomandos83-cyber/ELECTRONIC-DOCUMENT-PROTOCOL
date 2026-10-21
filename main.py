@@ -158,6 +158,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
         self.rbOrigin.toggled.connect(lambda: self.on_search_text_changed(self.txtSearchQuery.text()))
         self.rbDest.toggled.connect(lambda: self.on_search_text_changed(self.txtSearchQuery.text()))
         self.rbOffice.toggled.connect(lambda: self.on_search_text_changed(self.txtSearchQuery.text()))
+        self.rbArchive.toggled.connect(lambda: self.on_search_text_changed(self.txtSearchQuery.text()))
         self.rbDescInc.toggled.connect(lambda: self.on_search_text_changed(self.txtSearchQuery.text()))
         self.rbDescOut.toggled.connect(lambda: self.on_search_text_changed(self.txtSearchQuery.text()))
 
@@ -192,6 +193,9 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
         self.txtOrigin.textEdited.connect(self.on_field_changed)
         self.txtDestination.textEdited.connect(self.on_field_changed)
         self.txtOffice.textEdited.connect(self.on_field_changed)
+        self.comboArchiveFolder.currentTextChanged.connect(self.on_field_changed)
+        if self.comboArchiveFolder.lineEdit():
+            self.comboArchiveFolder.lineEdit().textEdited.connect(self.on_field_changed)
         self.txtIncomingDesc.textChanged.connect(self.on_field_changed)
         self.txtOutgoingDesc.textChanged.connect(self.on_field_changed)
         self.txtRemarks.textChanged.connect(self.on_field_changed)
@@ -200,6 +204,18 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
         self.dateProtocol.dateChanged.connect(self.on_field_changed)
         self.dateIncoming.dateChanged.connect(self.on_field_changed)
         self.dateOutgoing.dateChanged.connect(self.on_field_changed)
+
+    def populate_archive_folders(self):
+        """Ενημερώνει τη λίστα φακέλων αρχειοθέτησης από τη βάση δεδομένων."""
+        curr_text = self.comboArchiveFolder.currentText().strip()
+        folders = database.get_archive_folders()
+        self.comboArchiveFolder.blockSignals(True)
+        self.comboArchiveFolder.clear()
+        self.comboArchiveFolder.addItem("")
+        for f in folders:
+            self.comboArchiveFolder.addItem(f)
+        self.comboArchiveFolder.setCurrentText(curr_text)
+        self.comboArchiveFolder.blockSignals(False)
 
     # ---------------- DATABASE & DATA HANDLING ----------------
     def refresh_data(self):
@@ -230,6 +246,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
         self.load_records_for_year(selected_year)
 
     def load_records_for_year(self, year, target_proto_num=None):
+        self.populate_archive_folders()
         records = database.get_all_records(year_filter=year)
         self.current_records = [dict(r) for r in records]
         
@@ -306,6 +323,13 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             self.txtIncomingDesc.setPlainText(record.get("incoming_desc") or "")
             self.txtPhotoIncPath.setText(record.get("incoming_file") or "")
             self.txtOffice.setText(record.get("processing_office") or "")
+
+            # Archive folder
+            archive_folder = record.get("archive_folder") or ""
+            self.comboArchiveFolder.blockSignals(True)
+            self.comboArchiveFolder.setCurrentText(archive_folder)
+            self.comboArchiveFolder.blockSignals(False)
+
             self.chkCompleted.setChecked(bool(record.get("completed", 0)))
             self.txtRemarks.setPlainText(record.get("remarks") or "")
 
@@ -337,6 +361,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
 
         # Selectors & checks
         self.comboDocClass.setEnabled(not read_only)
+        self.comboArchiveFolder.setEnabled(not read_only)
         self.dateProtocol.setEnabled(not read_only)
         self.dateIncoming.setEnabled(not read_only)
         self.chkCompleted.setEnabled(not read_only)
@@ -348,6 +373,10 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             self.txtOrigin.setStyleSheet(ro_style)
             self.txtIncomingDesc.setStyleSheet(ro_style)
             self.txtOffice.setStyleSheet(ro_style)
+            self.comboArchiveFolder.setStyleSheet(ro_style)
+            if self.comboArchiveFolder.lineEdit():
+                self.comboArchiveFolder.lineEdit().setReadOnly(True)
+                self.comboArchiveFolder.lineEdit().setStyleSheet(ro_style)
             self.txtRemarks.setStyleSheet(ro_style)
             self.txtPhotoIncPath.setStyleSheet(ro_style)
             self.comboDocClass.setStyleSheet(ro_style)
@@ -359,6 +388,10 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             self.txtOrigin.setStyleSheet(white_style)
             self.txtIncomingDesc.setStyleSheet(white_style)
             self.txtOffice.setStyleSheet(white_style)
+            self.comboArchiveFolder.setStyleSheet(white_style)
+            if self.comboArchiveFolder.lineEdit():
+                self.comboArchiveFolder.lineEdit().setReadOnly(False)
+                self.comboArchiveFolder.lineEdit().setStyleSheet(white_style)
             self.txtRemarks.setStyleSheet(white_style)
             self.txtPhotoIncPath.setStyleSheet(white_style)
             self.comboDocClass.setStyleSheet(white_style)
@@ -558,6 +591,9 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             self.txtIncomingDesc.clear()
             self.txtPhotoIncPath.clear()
             self.txtOffice.clear()
+            self.comboArchiveFolder.blockSignals(True)
+            self.comboArchiveFolder.setCurrentText("")
+            self.comboArchiveFolder.blockSignals(False)
             self.chkCompleted.setChecked(False)
             self.txtRemarks.clear()
 
@@ -635,6 +671,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             "incoming_desc": self.txtIncomingDesc.toPlainText().strip(),
             "incoming_file": self.txtPhotoIncPath.text().strip(),
             "processing_office": self.txtOffice.text().strip(),
+            "archive_folder": self.comboArchiveFolder.currentText().strip(),
             "completed": 1 if self.chkCompleted.isChecked() else 0,
             "remarks": self.txtRemarks.toPlainText().strip(),
             "outgoing_date": self.dateOutgoing.date().toString("yyyy-MM-dd"),
@@ -807,6 +844,8 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             field = "Αποστέλλεται"
         elif self.rbOffice.isChecked():
             field = "Γραφείο Διεκπεραίωσης"
+        elif self.rbArchive.isChecked():
+            field = "Φάκελος Αρχείου"
         elif self.rbDescInc.isChecked():
             field = "ΠΕΡΙΓΡ. ΕΙΣΕΡΧ."
         elif self.rbDescOut.isChecked():
@@ -891,6 +930,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
                 self.txtOutgoingDesc.toPlainText().strip() or
                 self.txtRemarks.toPlainText().strip() or
                 self.txtOffice.text().strip() or
+                self.comboArchiveFolder.currentText().strip() or
                 (self.comboDocClass.currentIndex() != -1 and bool(self.comboDocClass.currentText().strip()))
             )
             if not has_data:
@@ -1070,7 +1110,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
                     writer.writerow([
                         "ID", "Αριθμός Πρωτοκόλλου", "Έτος", "Ημερομηνία", "Κατηγορία",
                         "Ημ. Εισερχομένου", "Είδος Εγγράφου", "Προέλευση", "Περιγραφή Εισερχ.",
-                        "Αρχείο Εισερχ.", "Γραφείο", "Διεκπεραιωμένο", "Παρατηρήσεις",
+                        "Αρχείο Εισερχ.", "Γραφείο", "Φάκελος Αρχειοθέτησης", "Διεκπεραιωμένο", "Παρατηρήσεις",
                         "Ημ. Εξερχομένου", "Προορισμός", "Περιγραφή Εξερχ.", "Αρχείο Εξερχ."
                     ])
                     for r in records:
@@ -1078,6 +1118,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
                             r["id"], r["protocol_number"], r["year"], r["protocol_date"],
                             r["doc_class"], r["incoming_date"], r["doc_type"], r["incoming_origin"],
                             r["incoming_desc"], r["incoming_file"], r["processing_office"],
+                            r.get("archive_folder", ""),
                             r["completed"], r["remarks"], r["outgoing_date"], r["outgoing_dest"],
                             r["outgoing_desc"], r["outgoing_file"]
                         ])

@@ -23,7 +23,7 @@ ATTACHMENTS_DIR = os.path.join(BASE_DIR, "attachments")
 BACKUPS_DIR = os.path.join(BASE_DIR, "backups")
 
 # Schema versioning
-CURRENT_SCHEMA_VERSION = 2
+CURRENT_SCHEMA_VERSION = 3
 
 # Master specification of expected columns for table 'records'
 # Format: column_name: column_definition (with sensible DEFAULT values to ensure zero data loss)
@@ -38,6 +38,7 @@ EXPECTED_COLUMNS = {
     "incoming_desc": "TEXT DEFAULT ''",
     "incoming_file": "TEXT DEFAULT ''",
     "processing_office": "TEXT DEFAULT ''",
+    "archive_folder": "TEXT DEFAULT ''",
     "completed": "INTEGER DEFAULT 0",
     "remarks": "TEXT DEFAULT ''",
     "outgoing_date": "TEXT DEFAULT ''",
@@ -126,6 +127,7 @@ def run_migrations(conn):
             incoming_desc TEXT,
             incoming_file TEXT,
             processing_office TEXT,
+            archive_folder TEXT DEFAULT '',
             completed INTEGER DEFAULT 0,
             remarks TEXT,
             outgoing_date TEXT,
@@ -146,6 +148,7 @@ def run_migrations(conn):
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_protocol_num_year ON records(protocol_number, year);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_records_year ON records(year);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_records_doc_class ON records(doc_class);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_records_archive_folder ON records(archive_folder);")
 
     # 5. Update user_version pragma
     if db_version < CURRENT_SCHEMA_VERSION:
@@ -291,6 +294,8 @@ def get_all_records(year_filter=None, search_field=None, search_query=None):
             "Προέρχεται": "incoming_origin",
             "Αποστέλλεται": "outgoing_dest",
             "Γραφείο Διεκπεραίωσης": "processing_office",
+            "Φάκελος Αρχείου": "archive_folder",
+            "Φάκελος Αρχειοθέτησης": "archive_folder",
             "ΠΕΡΙΓΡ. ΕΙΣΕΡΧ.": "incoming_desc",
             "ΠΕΡΙΓΡ. ΕΞΕΡΧ.": "outgoing_desc"
         }
@@ -305,6 +310,18 @@ def get_all_records(year_filter=None, search_field=None, search_query=None):
     rows = cursor.fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+
+def get_archive_folders():
+    """Returns a sorted list of unique archive folders used in records."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT DISTINCT archive_folder FROM records WHERE archive_folder IS NOT NULL AND archive_folder != '' ORDER BY archive_folder COLLATE NOCASE ASC"
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return [row[0] for row in rows if row[0]]
 
 
 def get_years():
