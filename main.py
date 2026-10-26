@@ -16,6 +16,7 @@ from app.config import (
     APP_USER_MODEL_ID, __version__, __app_name__, GITHUB_REPO
 )
 from app.models import ProtocolRecord, RecordMode, DocumentClass
+from app.services import AttachmentService, BackupService
 
 # Κλείδωμα Τρέχοντος Καταλόγου Εργασίας
 setup_environment()
@@ -853,10 +854,10 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
     def browse_photo(self, target_line_edit):
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Επιλογή Συνημμένου Εγγράφου", "",
-            "Όλα τα υποστηριζόμενα (*.pdf *.jpg *.jpeg *.png *.bmp *.docx *.xlsx);;Αρχεία PDF (*.pdf);;Εικόνες / Σαρώσεις (*.jpg *.jpeg *.png *.bmp);;Έγγραφα Office (*.docx *.xlsx);;Όλα τα αρχεία (*.*)"
+            AttachmentService.FILE_DIALOG_FILTERS
         )
         if file_path:
-            dest = database.copy_to_attachments(file_path)
+            dest = AttachmentService.copy_to_attachments(file_path)
             target_line_edit.setText(dest)
 
     def open_photo(self, path):
@@ -864,19 +865,19 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, "Προσοχή", "Δεν έχει καθοριστεί διαδρομή αρχείου για άνοιγμα.")
             return
 
-        full_path = os.path.abspath(path.strip())
-        if not os.path.exists(full_path):
-            QMessageBox.warning(self, "Προσοχή", f"Το αρχείο δεν βρέθηκε στη διαδρομή:\n{full_path}")
+        resolved_path = AttachmentService.resolve_path(path)
+        if not resolved_path:
+            QMessageBox.warning(self, "Προσοχή", f"Το αρχείο δεν βρέθηκε στη διαδρομή:\n{path}")
             return
 
-        ext = os.path.splitext(full_path)[1].lower()
-        if ext in (".pdf", ".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp"):
-            # Άνοιγμα με τον ενσωματωμένο προβολέα εγγράφων
-            viewer = DocumentViewerDialog(full_path, parent=self, app_icon=self.windowIcon())
+        if AttachmentService.can_preview_internally(resolved_path):
+            viewer = DocumentViewerDialog(resolved_path, parent=self, app_icon=self.windowIcon())
             viewer.exec()
         else:
-            # Άνοιγμα με την προεπιλεγμένη εφαρμογή του συστήματος (π.χ. Word, Excel)
-            os.startfile(full_path)
+            try:
+                AttachmentService.open_with_default_application(resolved_path)
+            except Exception as e:
+                QMessageBox.critical(self, "Σφάλμα", f"Αποτυχία ανοίγματος αρχείου: {e}")
 
     # ---------------- PROTOCOL BUTTON COLOR STATE & UNSAVED CHANGES ----------------
     def set_protocol_button_state(self, is_new_or_dirty: bool):
@@ -1044,12 +1045,12 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
 
     def action_backup(self):
         dest_file, _ = QFileDialog.getSaveFileName(
-            self, "Αποθήκευση Αντιγράφου Ασφαλείας", f"backup_protocol_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db",
+            self, "Αποθήκευση Αντιγράφου Ασφαλείας", BackupService.get_default_backup_filename(),
             "SQLite Database (*.db)"
         )
         if dest_file:
             try:
-                database.create_backup(dest_file)
+                BackupService.create_backup(dest_file)
                 QMessageBox.information(self, "Αντίγραφο Ασφαλείας", "Το αντίγραφο δημιουργήθηκε επιτυχώς!")
             except Exception as e:
                 QMessageBox.critical(self, "Σφάλμα", f"Αποτυχία δημιουργίας: {e}")
@@ -1067,7 +1068,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             )
             if confirm == QMessageBox.StandardButton.Yes:
                 try:
-                    database.restore_backup(src_file)
+                    BackupService.restore_backup(src_file)
                     QMessageBox.information(self, "Επαναφορά", "Η επαναφορά ολοκληρώθηκε επιτυχώς!")
                     self.refresh_data()
                 except Exception as e:
@@ -1075,30 +1076,13 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
 
     def action_export(self):
         file_path, _ = QFileDialog.getSaveFileName(
-            self, "Εξαγωγή σε CSV", f"protocol_export_{datetime.now().strftime('%Y%m%d')}.csv",
+            self, "Εξαγωγή σε CSV", BackupService.get_default_export_filename(),
             "CSV Files (*.csv)"
         )
         if file_path:
             try:
-                records = database.get_all_records()
-                with open(file_path, "w", newline="", encoding="utf-8-sig") as f:
-                    writer = csv.writer(f)
-                    writer.writerow([
-                        "ID", "Αριθμός Πρωτοκόλλου", "Έτος", "Ημερομηνία", "Κατηγορία",
-                        "Ημ. Εισερχομένου", "Είδος Εγγράφου", "Προέλευση", "Περιγραφή Εισερχ.",
-                        "Αρχείο Εισερχ.", "Γραφείο", "Φάκελος Αρχειοθέτησης", "Διεκπεραιωμένο", "Παρατηρήσεις",
-                        "Ημ. Εξερχομένου", "Προορισμός", "Περιγραφή Εξερχ.", "Αρχείο Εξερχ."
-                    ])
-                    for r in records:
-                        writer.writerow([
-                            r["id"], r["protocol_number"], r["year"], r["protocol_date"],
-                            r["doc_class"], r["incoming_date"], r["doc_type"], r["incoming_origin"],
-                            r["incoming_desc"], r["incoming_file"], r["processing_office"],
-                            r.get("archive_folder", ""),
-                            r["completed"], r["remarks"], r["outgoing_date"], r["outgoing_dest"],
-                            r["outgoing_desc"], r["outgoing_file"]
-                        ])
-                QMessageBox.information(self, "Εξαγωγή", "Τα δεδομένα εξήχθησαν επιτυχώς!")
+                count = BackupService.export_to_csv(file_path)
+                QMessageBox.information(self, "Εξαγωγή", f"Εξήχθησαν επιτυχώς {count} εγγραφές!")
             except Exception as e:
                 QMessageBox.critical(self, "Σφάλμα", f"Αποτυχία εξαγωγής: {e}")
 
@@ -1126,7 +1110,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             return
 
         try:
-            database.reset_database()
+            BackupService.reset_database()
             self.is_dirty = False
             self.is_edit_mode = False
             self.is_new_mode = False
