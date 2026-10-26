@@ -22,6 +22,11 @@ a = Analysis(
         ('launcher.bat', '.'),
     ],
     hiddenimports=[
+        'app',
+        'app.config',
+        'app.models',
+        'app.services',
+        'app.ui',
         'PyQt6',
         'PyQt6.QtWidgets',
         'PyQt6.QtCore',
