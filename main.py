@@ -16,7 +16,7 @@ from app.config import (
     APP_USER_MODEL_ID, __version__, __app_name__, GITHUB_REPO
 )
 from app.models import ProtocolRecord, RecordMode, DocumentClass
-from app.services import AttachmentService, BackupService
+from app.services import AttachmentService, BackupService, ProtocolService, ValidationError
 
 # Κλείδωμα Τρέχοντος Καταλόγου Εργασίας
 setup_environment()
@@ -185,7 +185,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
     def populate_archive_folders(self):
         """Ενημερώνει τη λίστα φακέλων αρχειοθέτησης από τη βάση δεδομένων."""
         curr_text = self.comboArchiveFolder.currentText().strip()
-        folders = database.get_archive_folders()
+        folders = ProtocolService.get_archive_folders()
         self.comboArchiveFolder.blockSignals(True)
         self.comboArchiveFolder.clear()
         self.comboArchiveFolder.addItem("")
@@ -201,7 +201,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
         self.is_new_mode = False
         
         # Populate Year Combobox
-        years = database.get_years()
+        years = ProtocolService.get_years()
         curr_year = datetime.now().year
         if curr_year not in years:
             years.insert(0, curr_year)
@@ -224,8 +224,8 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
 
     def load_records_for_year(self, year, target_proto_num=None):
         self.populate_archive_folders()
-        records = database.get_all_records(year_filter=year)
-        self.current_records = [dict(r) for r in records]
+        records = ProtocolService.get_records_by_year(year)
+        self.current_records = [r.to_dict() for r in records]
         
         # Update search proto dropdown
         self.comboSearchProto.blockSignals(True)
@@ -249,7 +249,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             self.current_index = -1
             self.clear_fields()
             self.txtCurrentYear.setText(str(year))
-            self.txtProtocolNum.setText(str(database.get_next_protocol_number(year)))
+            self.txtProtocolNum.setText(str(ProtocolService.get_next_protocol_number(year)))
             self.is_new_mode = True
             self.is_edit_mode = True
             self.set_form_read_only(False)
@@ -592,7 +592,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
         else:
             active_year = datetime.now().year
         self.txtCurrentYear.setText(str(active_year))
-        next_num = database.get_next_protocol_number(active_year)
+        next_num = ProtocolService.get_next_protocol_number(active_year)
         self.txtProtocolNum.setText(str(next_num))
         self.lblNavOf.setText(f"από {len(self.current_records)}")
         self.txtNavIndex.setText("*")
@@ -602,31 +602,6 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
         self.comboDocClass.setFocus()
 
     def save_record(self):
-        # Validation: check if doc_class is selected
-        doc_class = self.comboDocClass.currentText().strip()
-        if not doc_class or self.comboDocClass.currentIndex() == -1:
-            QMessageBox.warning(self, "Προσοχή", "Επιλέξτε ΕΙΣΕΡΧΟΜΕΝΟ ή ΕΞΕΡΧΟΜΕΝΟ")
-            self.comboDocClass.setFocus()
-            return False
-
-        # Validation: For ΕΙΣΕΡΧΟΜΕΝΟ, ΕΙΔΟΣ ΕΓΓΡΑΦΟΥ & ΥΠΗΡΕΣΙΑ ΠΟΥ ΠΡΟΕΡΧΕΤΑΙ are mandatory
-        if doc_class == "ΕΙΣΕΡΧΟΜΕΝΟ":
-            missing = []
-            if not self.txtDocType.text().strip():
-                missing.append("ΕΙΔΟΣ ΕΓΓΡΑΦΟΥ")
-            if not self.txtOrigin.text().strip():
-                missing.append("ΥΠΗΡΕΣΙΑ ΠΟΥ ΠΡΟΕΡΧΕΤΑΙ")
-            if missing:
-                QMessageBox.warning(
-                    self, "Υποχρεωτικά Πεδία",
-                    f"Για τα ΕΙΣΕΡΧΟΜΕΝΑ, τα παρακάτω πεδία είναι υποχρεωτικά:\n• " + "\n• ".join(missing)
-                )
-                if not self.txtDocType.text().strip():
-                    self.txtDocType.setFocus()
-                else:
-                    self.txtOrigin.setFocus()
-                return False
-
         try:
             year = int(self.txtCurrentYear.text())
         except ValueError:
@@ -637,33 +612,48 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
         except ValueError:
             proto_num = 0
 
-        data = {
-            "protocol_number": proto_num,
-            "year": year,
-            "protocol_date": self.dateProtocol.date().toString("yyyy-MM-dd"),
-            "doc_class": doc_class,
-            "incoming_date": self.dateIncoming.date().toString("yyyy-MM-dd"),
-            "doc_type": self.txtDocType.text().strip(),
-            "incoming_origin": self.txtOrigin.text().strip(),
-            "incoming_desc": self.txtIncomingDesc.toPlainText().strip(),
-            "incoming_file": self.txtPhotoIncPath.text().strip(),
-            "processing_office": self.txtOffice.text().strip(),
-            "archive_folder": self.comboArchiveFolder.currentText().strip(),
-            "completed": 1 if self.chkCompleted.isChecked() else 0,
-            "remarks": self.txtRemarks.toPlainText().strip(),
-            "outgoing_date": self.dateOutgoing.date().toString("yyyy-MM-dd"),
-            "outgoing_dest": self.txtDestination.text().strip(),
-            "outgoing_desc": self.txtOutgoingDesc.toPlainText().strip(),
-            "outgoing_file": self.txtPhotoOutPath.text().strip()
-        }
+        current_id = None
+        if not self.is_new_mode and 0 <= self.current_index < len(self.current_records):
+            current_id = self.current_records[self.current_index].get("id")
+
+        record = ProtocolRecord(
+            id=current_id,
+            protocol_number=proto_num,
+            year=year,
+            protocol_date=self.dateProtocol.date().toString("yyyy-MM-dd"),
+            doc_class=self.comboDocClass.currentText().strip(),
+            incoming_date=self.dateIncoming.date().toString("yyyy-MM-dd"),
+            doc_type=self.txtDocType.text().strip(),
+            incoming_origin=self.txtOrigin.text().strip(),
+            incoming_desc=self.txtIncomingDesc.toPlainText().strip(),
+            incoming_file=self.txtPhotoIncPath.text().strip(),
+            processing_office=self.txtOffice.text().strip(),
+            archive_folder=self.comboArchiveFolder.currentText().strip(),
+            completed=1 if self.chkCompleted.isChecked() else 0,
+            remarks=self.txtRemarks.toPlainText().strip(),
+            outgoing_date=self.dateOutgoing.date().toString("yyyy-MM-dd"),
+            outgoing_dest=self.txtDestination.text().strip(),
+            outgoing_desc=self.txtOutgoingDesc.toPlainText().strip(),
+            outgoing_file=self.txtPhotoOutPath.text().strip()
+        )
+
+        try:
+            ProtocolService.validate(record)
+        except ValidationError as ve:
+            QMessageBox.warning(self, "Υποχρεωτικά Πεδία", str(ve))
+            if ve.target_widget_hint:
+                target_w = getattr(self, ve.target_widget_hint, None)
+                if target_w:
+                    target_w.setFocus()
+            return False
 
         if self.is_new_mode:
-            _, assigned_num = database.insert_record(data)
+            saved_record, _ = ProtocolService.save(record, is_new=True)
             self.is_new_mode = False
             self.is_edit_mode = False
             self.is_dirty = False
-            QMessageBox.information(self, "Επιτυχία", f"Το Πρωτόκολλο #{assigned_num}/{year} αποθηκεύτηκε επιτυχώς!")
-            years = database.get_years()
+            QMessageBox.information(self, "Επιτυχία", f"Το Πρωτόκολλο #{saved_record.protocol_number}/{year} αποθηκεύτηκε επιτυχώς!")
+            years = ProtocolService.get_years()
             self.comboSelectYear.blockSignals(True)
             self.comboSelectYear.clear()
             for y in sorted(years, reverse=True):
@@ -672,10 +662,9 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
             if idx >= 0:
                 self.comboSelectYear.setCurrentIndex(idx)
             self.comboSelectYear.blockSignals(False)
-            self.load_records_for_year(year, target_proto_num=assigned_num)
+            self.load_records_for_year(year, target_proto_num=saved_record.protocol_number)
         else:
             if 0 <= self.current_index < len(self.current_records):
-                # Proposal 2: Explicit Confirmation Dialog on Updating Existing Record
                 reply = QMessageBox.question(
                     self,
                     "Επιβεβαίωση Τροποποίησης",
@@ -687,14 +676,13 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
                 if reply != QMessageBox.StandardButton.Yes:
                     return False
 
-                record_id = self.current_records[self.current_index]["id"]
-                database.update_record(record_id, data)
+                ProtocolService.save(record, is_new=False)
                 self.is_dirty = False
                 self.is_edit_mode = False
                 QMessageBox.information(self, "Επιτυχία", f"Το Πρωτόκολλο #{proto_num}/{year} ενημερώθηκε!")
                 self.load_records_for_year(year, target_proto_num=proto_num)
             else:
-                database.insert_record(data)
+                ProtocolService.save(record, is_new=True)
                 self.is_dirty = False
                 self.is_edit_mode = False
                 self.refresh_data()
@@ -832,8 +820,8 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
 
         year_val = self.comboSelectYear.currentText()
         year_filter = int(year_val) if year_val.isdigit() else None
-        results = database.get_all_records(year_filter=year_filter, search_field=field, search_query=query)
-        self.current_records = [dict(r) for r in results]
+        results = ProtocolService.search_records(year_filter=year_filter, search_field=field, query=query)
+        self.current_records = [r.to_dict() for r in results]
         if self.current_records:
             self.current_index = 0
             self.display_record(self.current_records[0])
