@@ -10,7 +10,7 @@ from pathlib import Path
 try:
     from version import __version__, __app_name__, GITHUB_REPO
 except ImportError:
-    __version__ = "1.0.5"
+    __version__ = "1.0.6"
     __app_name__ = "Ηλεκτρονικό Πρωτόκολλο Εγγράφων"
     GITHUB_REPO = "grcomandos83-cyber/ELECTRONIC-DOCUMENT-PROTOCOL"
 
