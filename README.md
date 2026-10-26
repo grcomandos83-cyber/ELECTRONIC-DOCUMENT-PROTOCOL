@@ -35,8 +35,8 @@
 
 ## 🚀 Οδηγίες Εγκατάστασης σε 3 Βήματα
 
-1. **Λήψη:** Πατήστε στο κουμπί [**⬇️ Λήψη Installer (.exe)**](https://github.com/grcomandos83-cyber/ELECTRONIC-DOCUMENT-PROTOCOL/releases/latest/download/Protocol_Setup_v1.0.0.exe).
-2. **Εγκατάσταση:** Κάντε διπλό κλικ στο αρχείο `Protocol_Setup_v1.0.0.exe` που κατεβάσατε και ακολουθήστε τις οδηγίες στην οθόνη (*Επόμενο ➔ Επόμενο ➔ Εγκατάσταση*).
+1. **Λήψη:** Πατήστε στο κουμπί [**⬇️ Λήψη Installer (.exe)**](https://github.com/grcomandos83-cyber/ELECTRONIC-DOCUMENT-PROTOCOL/releases/latest/download/Protocol_Setup_v1.0.6.exe) (ή κατεβάστε το [**Protocol_Setup_Latest.exe**](https://github.com/grcomandos83-cyber/ELECTRONIC-DOCUMENT-PROTOCOL/releases/latest/download/Protocol_Setup_Latest.exe) για την πιο πρόσφατη έκδοση).
+2. **Εγκατάσταση:** Κάντε διπλό κλικ στο αρχείο `Protocol_Setup_v1.0.6.exe` (ή `Protocol_Setup_Latest.exe`) που κατεβάσατε και ακολουθήστε τις οδηγίες στην οθόνη (*Επόμενο ➔ Επόμενο ➔ Εγκατάσταση*).
 3. **Έναρξη:** Ανοίξτε την εφαρμογή από τη συντόμευση **«Ηλεκτρονικό Πρωτόκολλο Εγγράφων»** στην Επιφάνεια Εργασίας σας!
 
 ---
