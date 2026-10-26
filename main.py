@@ -1,54 +1,30 @@
 import os
 import sys
-
-# ─────────────────────────────────────────────────────────────
-# Κλείδωμα Τρέχοντος Καταλόγου Εργασίας (Working Directory Lock)
-# Αποτρέπει σφάλματα διαδρομών όταν η εφαρμογή καλείται από
-# εξωτερικές συντομεύσεις ή διεργασίες συστήματος.
-# ─────────────────────────────────────────────────────────────
-if getattr(sys, 'frozen', False):
-    os.chdir(os.path.dirname(sys.executable))
-else:
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
 import shutil
 import csv
 from datetime import datetime
+import ctypes
 
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QMessageBox, QFileDialog, QInputDialog, QLabel
 )
 from PyQt6.QtCore import QTimer, QDate, Qt
 from PyQt6.QtGui import QKeySequence, QShortcut, QAction, QIcon
-import ctypes
 
-def get_app_icon_path():
-    """Εντοπίζει το εικονίδιο της εφαρμογής είτε σε dev mode είτε σε PyInstaller package."""
-    candidates = [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "app_icon.ico"),
-        os.path.join(os.path.dirname(sys.executable), "assets", "app_icon.ico"),
-        os.path.join(os.path.dirname(sys.executable), "_internal", "assets", "app_icon.ico"),
-        os.path.join(os.getcwd(), "assets", "app_icon.ico"),
-    ]
-    for p in candidates:
-        if os.path.exists(p):
-            return p
-    return ""
+from app.config import (
+    setup_environment, get_app_icon_path, GREEK_WEEKDAYS, GREEK_MONTHS,
+    APP_USER_MODEL_ID, __version__, __app_name__, GITHUB_REPO
+)
+from app.models import ProtocolRecord, RecordMode, DocumentClass
+
+# Κλείδωμα Τρέχοντος Καταλόγου Εργασίας
+setup_environment()
 
 from ui_protocol_form import Ui_MainWindow
 from search_dialog import SearchDialog
 import database
-from version import __version__, __app_name__, GITHUB_REPO
 from updater import AutoUpdater
 from document_viewer import DocumentViewerDialog
-
-GREEK_WEEKDAYS = [
-    "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο", "Κυριακή"
-]
-GREEK_MONTHS = [
-    "Ιανουαρίου", "Φεβρουαρίου", "Μαρτίου", "Απριλίου", "Μαΐου", "Ιουνίου",
-    "Ιουλίου", "Αυγούστου", "Σεπτεμβρίου", "Οκτωβρίου", "Νοεμβρίου", "Δεκεμβρίου"
-]
 
 
 class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
@@ -1185,7 +1161,7 @@ class ProtocolMainWindow(QMainWindow, Ui_MainWindow):
 def main():
     # Set Windows AppUserModelID so taskbar groups properly and displays the custom app icon
     try:
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("cyber.protocol.desktop.1.0")
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(APP_USER_MODEL_ID)
     except Exception:
         pass
 

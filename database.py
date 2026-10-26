@@ -4,23 +4,7 @@ import sys
 import shutil
 from datetime import datetime
 
-def _get_base_data_dir():
-    # 1. Portable / Development mode: if protocol.db exists in current directory, use it
-    if os.path.exists("protocol.db"):
-        return os.getcwd()
-    app_dir = os.path.dirname(os.path.abspath(sys.argv[0])) if sys.argv and sys.argv[0] else os.getcwd()
-    if os.path.exists(os.path.join(app_dir, "protocol.db")) or not getattr(sys, "frozen", False):
-        return app_dir
-    # 2. Installed mode: keep user data persistently in %APPDATA%\Protokollo so updates never overwrite it
-    appdata = os.environ.get("APPDATA") or os.path.expanduser("~")
-    data_dir = os.path.join(appdata, "Protokollo")
-    os.makedirs(data_dir, exist_ok=True)
-    return data_dir
-
-BASE_DIR = _get_base_data_dir()
-DB_FILE = os.path.join(BASE_DIR, "protocol.db")
-ATTACHMENTS_DIR = os.path.join(BASE_DIR, "attachments")
-BACKUPS_DIR = os.path.join(BASE_DIR, "backups")
+from app.config import BASE_DIR, DB_FILE, ATTACHMENTS_DIR, BACKUPS_DIR
 
 # Schema versioning
 CURRENT_SCHEMA_VERSION = 3
